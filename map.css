@@ -1,0 +1,435 @@
+/* html base elements */
+
+body{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	max-height: 100%;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:11px;
+}
+a:link {
+	color: #0054a6;
+}
+a:visited {
+	color: #0054a6;
+}
+a:active,
+a:hover {
+	color: #ed1c24;
+}
+img{
+	border:none;
+}
+
+h3 {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	color: navy;
+	padding-top: 0px;
+	padding-bottom: 3px;
+}
+h3 a{
+	text-decoration:none;
+}
+
+h3 a:visited{
+	color: navy;
+}
+
+/* PAGE LAYOUT */
+
+#framecontent{
+	padding:0;
+	position: absolute;
+	top: 0px;
+	bottom: 0;
+	left: 0px;
+	width: 320px;
+	/*width of content within left frame*/
+	/*
+		overflow: hidden; Disable scrollbars. Set to "scroll" to enable
+	*/
+
+	overflow: hidden;
+	background:#F0F0F0;
+	color: #000000;
+}
+
+#side_content{/
+	/*max-height: 800px;  supply current height here*/
+    height: auto;
+    overflow: auto;/*
+	border-right:1px solid black;
+	border-bottom:1px solid black;
+	border-left:1px solid black;*/
+
+}
+
+#left_content{
+	margin:4px; /**/
+    height: auto;
+    overflow: hidden;
+	
+}
+
+#footer{
+	height:20px;
+	width:320px;
+	text-align:center;
+	vertical-align:bottom;
+	overflow:hidden;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:9px;
+	position: absolute; bottom: 5px;
+	display:inline;
+}
+
+#colapse{
+	width:100%;
+	text-align:right;
+	position: absolute; bottom: 1px;
+	font-family: sans-serif;
+	font-size:12px;
+}
+
+#maincontent, #map{
+	position: fixed;
+	top: 0;
+	left: 320px; /* True value of left frame*/
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+	background: #fff;
+}
+
+#expand{
+	display:none;
+	vertical-align: middle;
+	background:#FF00;
+}
+
+#expand_bttn{
+	position:absolute; top:50%;
+}
+
+.innertube{
+	margin:0; /*Margins for inner DIV inside each DIV (to provide padding)*/
+}
+
+* html body{ /*IE6 hack*/
+	padding: 0 0 0 200px; /*Set value to (0 0 0 WidthOfFrameDiv)*/
+}
+
+* html #maincontent{ /*IE6 hack*/
+	height: 100%;
+	width: 100%;
+}
+
+#search_BL,#search_ADDR,#search_OWNR,#search_LND,#search_FAC{
+	display:none;
+}
+
+.search_results{
+	
+	
+}
+
+.search_field{
+	width: 230px;
+}
+
+/* MAP ELEMENTS */
+
+/* Map Toolbar */
+
+#MapLayers{overflow:auto;}
+#map_layers{}
+
+#dParcelSelection{overflow:auto}
+.dSummaryViewMore{
+	margin-top: -5px;	
+}
+.dParcelItem a{
+	margin:5px 5px 5px 0;
+	background-color:#CCCCCC;
+	font: 10px verdana,arial,sans-serif;
+    list-style-type: none;
+    padding: 3px;
+    text-align: left;
+	color:#F33;
+	text-decoration:none;
+}
+.dParcelItem a:active,
+.dParcelItem a:hover {
+	color: #4A6491;
+}
+
+.dSelParcelContainer{
+	margin:6px 0;
+}
+
+#toolbar{
+	height:65px;
+	overflow:hidden;
+	background-color:#355484;
+	background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/banner-left.png);
+}
+
+.toolset{
+	padding:5px 0;
+}
+
+.toolset img{
+	border:none;
+	padding:0 4px;
+}
+
+.tool_button{
+	display:inline;
+	float: left;	
+	width:24px;
+	height:24px;
+	border:0;
+	background-repeat:no-repeat;
+	background-position:center;
+}
+.tool_button a:hover{border:1px solid white;}
+
+#navToolbar{
+	padding:39px 0 0 6px;
+}
+#nav_zoom_in{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/nav_zoom_in.png);}
+#nav_zoom_out{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/nav_zoom_out.png);}
+#nav_zoom_fullext{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/full_extent.png);}
+#nav_zoom_prev{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/nav_zoom_last.png);}
+#nav_zoom_next{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/nav_zoom_next.png);}
+#nav_btn_erase{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/nav_pan.png);}
+#nav_pan{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/nav_pan.png);}
+#nav_identify{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/id.png);}
+#nav_btn_search{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/find16.png);}
+#nav_btn_select{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/select.png);}
+#nav_btn_buffer{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/buffer.png);}
+#nav_measure{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/measure.png);}
+#nav_btn_erase{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/tb_erase.png);}
+#nav_btn_ERIS{background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/eris.png);}
+
+#tabs{
+	background-color:#355484;
+	padding:4px 0 0 0;	
+}
+#tablist{
+	list-style: none;
+	margin:0;
+	padding:0;
+}
+ul#tablist {
+    font: 10px verdana,arial,sans-serif;
+    list-style-type: none;
+    padding: 3px 10px 0 0;
+    text-align: left;
+}
+ul#tablist li a {
+    -moz-border-bottom-colors: none;
+    -moz-border-image: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+   /* background-color: #FFFFFF;*/
+    padding:0 10px ;
+    color: #000000;
+    margin-right: 0;
+    /*padding: 3px 4px;*/
+    text-decoration: none;
+}
+#HelpTab{
+	background-color:#f0f0f0;
+	font-weight:bold;
+	
+}
+#SearchTab, #ResultsTab, #LayersToggle{
+	background-color:#ffffff;
+}
+
+#tablist li{
+	display:inline;
+	/*padding: 3px 2px 1px 0;*/
+	padding: 3px 2px 0 0;
+	font-family:Arial, Helvetica, sans-serif;
+	/*border-color: #000000;
+    border-style: solid solid none;
+    border-width: 1px 1px medium;*/
+}
+#MapLayers, #SearchPane, #ResultsPane{
+	display:none;}
+#MapLayers, #SearchPane, #ResultsPane, #HelpPane{
+	overflow-y: auto;
+	overflow-x: hidden;
+	
+}
+
+#HelpPane{
+	padding:4px;
+}
+.sectionTitle{
+	margin: 2px 0;
+}
+
+/* dojo diji specific styles */
+
+.dijitButtonNode, .dijitButtonNode * {
+    cursor: pointer;
+}
+.dijitStretch {
+    background-repeat: repeat-x;
+    white-space: nowrap;
+}
+.dijitButtonNode * {
+    vertical-align: middle;
+}
+.dijitReset {
+    border: 0 none;
+    color: inherit;
+    font: inherit;
+    margin: 0;
+    padding: 0;
+	height:17px;
+	width:17px;
+	}
+.dijitToggleButtonIconChar {
+    display: none !important;
+}
+
+.searchParcelSection div{
+	overflow:hidden;
+}
+
+.searchParcelSection input{
+	/*width:140px;*/
+	margin-left:9px;
+}
+
+.ident_layer{
+	border-bottom: 1px dashed #999999;
+	padding-bottom: 5px;
+	margin:2px;
+}
+
+.ident_layer_title{
+	font-weight:bold;
+}
+.ident_layer_attr{padding:2px;}
+.ident_field, .detail_field{font-weight:bold;margin-right:9px;}
+.ident_value{font-style:italic}
+
+.toc_heading{
+	text-align:center;
+	color:#003366;
+	font-weight:bold;	
+}
+.toc_group_title{
+	font-weight:bold;
+	text-decoration:underline;
+	padding-top: 4px;
+
+}
+#map_images, #map_layer_groups{	
+	border-bottom: 1px dashed #999999;
+	padding-bottom: 5px;
+	margin-left: 4px;
+}
+
+#dMeasureWrap{display:none;}
+
+.dijitButtonNode, .esriButton{margin:6px;}
+.dijitReset{margin:6px;}
+#dBufferTool{
+	display:none;
+}
+
+.toc_legend_toggle{
+	height:10px;
+	width:20px;
+	
+}
+.toc_imageup{
+	background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/more_arrow_up.png); background-repeat:no-repeat;
+}
+.toc_imagedown{
+	background-image:url(http://webmaps.njmeadowlands.gov/municipal/images/icons_bk/more_arrow_down.png); background-repeat:no-repeat;
+}
+.toc_legend{
+	display:none;
+	border-bottom: 1px solid black;
+	font-family:Helvetica, Arial, sans-serif;
+	font-size:9px;
+	padding:2px;
+}
+
+.toc_legend img{
+	border: 1px solid black !important;	
+}
+.toc_legend{
+	background-color:#FFFFFF;
+}
+.ResultList, .RTK_RECORD{
+	list-style: none;
+	margin:0;
+	padding:0;
+	border-bottom: 1px dashed #999999;
+}
+.field{
+	display:inline;
+	font-weight:bold;
+	padding-right: 4px;
+}
+.value{
+	display:inline;
+}
+#signInFormNode{
+	padding:5px 0;
+}
+.eris_login_fld{
+	margin-left:5px;
+	width: 180px;
+}
+.eris_login_lbl{
+	width: 80px;
+	float: left;
+	text-align: right;
+	margin-right: 5px;
+	display: block
+}
+#ERISLogin{
+	margin-left: 220px;
+}
+.ERIS_LINK{
+	background:url(../images/LinkEris.png);
+	background-position:0 0;
+	background-repeat:no-repeat;
+	padding: 0.4em 1em 0.4em 20px
+}
+@media print
+{
+	#M_meri{display:block;}
+
+	h3{
+		visibility:hidden;
+		display:none;
+	}
+	#framecontent{
+		visibility:hidden;
+		display:none;
+	}
+	#map{
+		visibility:visible !important;
+		display:block !important;
+		height: 1150px !important;
+    	width: 900px !important;
+		position:absolute;
+		top:0px;
+		left:0px;
+		
+	}
+}
