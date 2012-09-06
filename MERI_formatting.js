@@ -9,23 +9,20 @@
 	function toProperCase(s)
 	{
 		s = s.toString();
-	  	return s.toLowerCase().replace(/^(.)|\s(.)/g, 
-			  function($1) { return $1.toUpperCase(); });
+	  	return s.toLowerCase().replace(/^(.)|\s(.)/g,  function( $1 ) { return $1.toUpperCase(); });
 	}
 	
 //FIELD NAME ALIASES
 	function fieldAlias( fieldName, dataSource ){
-		var alias = aliases.fieldNames;
-		
-		console.log("field name alaises", alias);
-		
+	
+	
 		dataSource = typeof(dataSource) != 'undefined' ? dataSource : '';
 
-		alias['NAME'] = dataSource + ' Name';
-		alias["ADDRESS"] = dataSource + ' Address';		
+		aliases.fieldNames['NAME'] = dataSource + ' Name';
+		aliases.fieldNames["ADDRESS"] = dataSource + ' Address';		
 		
-		if( fieldName in alias ){
-			return( alias[ fieldName ] );
+		if( fieldName in aliases.fieldNames ){
+			return( aliases.fieldNames[ fieldName ] );
 		}else{
 			return( toProperCase( fieldName ));
 		}
@@ -33,35 +30,30 @@
 	}
 // lANDUSE CLEANUP
 function landuseAlias( a ){
-	var alias = aliases.landUseCodes;
-		if( a in alias){
-			return(alias[a]);
+	
+		if( a in aliases.landUseCodes){
+			return( aliases.landUseCodes[ a ]);
 		}else{
-			return(toProperCase(a));
+			return( toProperCase( a ));
 		}
 }
 // ZONING CLEANUP
-function zoningAlias(a){
+function zoningAlias( a ){
 
-	var alias = aliases.zoneCodes;
-	
-		if( a in alias ){
-			return( alias[a] );
+		if( a in aliases.zoneCodes ){
+			return( aliases.zoneCodes[a] );
 		}else{
 			return( toProperCase(a) );
 		}
 }
 // MUN_CODE CLEANUP
-function muncodeToName(c){
+function muncodeToName( c ){
 
-	var alias = aliases.munCodes;
-		//console.log("muncodeToName", c, "muncode", mun_code);
-	
 	if( c.length == 4){
 		c = c.substr(1,3);
 	}
-	if( c in alias ){
-		return( alias[c] );
+	if( c in aliases.munCodes ){
+		return( aliases.munCodes[ c ] );
 	}else{
 		return( toProperCase(c) );
 	}
