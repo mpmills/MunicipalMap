@@ -4,11 +4,279 @@
 <title>New Jersey Meadowlands Commission &raquo; Municipal Map</title>
 
 <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/dojo/dijit/themes/claro/claro.css">
+<link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/esri/dijit/css/Popup.css">
+
 <link rel="stylesheet" type="text/css" href="map.css" />
 
 <script type="text/javascript">dojoConfig = { parseOnLoad:true };</script>
 <script type="text/javascript" src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.1"></script>
 <script type="text/javascript" src="MERI_formatting.js"></script>
+
+</head>
+
+<body class="claro">
+
+<div id="wrapper">
+    <div id="framecontent">
+        <div class="innertube">
+		<div id="toolbar">
+			<div id="navToolbar" >
+				<div class="tool_button" id="nav_zoom_in" 		title="Zoom In"					iconClass="zoominIcon" 		></div>
+				<div class="tool_button" id="nav_zoom_out" 		title="Zoom Out"				iconClass="zoomoutIcon" 	></div>
+				<div class="tool_button" id="nav_zoom_fullext" 	title="Zoom Full Extent"		iconClass="zoomfullextIcon" ></div>
+				<div class="tool_button" id="nav_zoom_prev" 	title="Zoom Previous Extent" 	iconClass="zoomprevIcon"	></div>
+				<div class="tool_button" id="nav_zoom_next" 	title="Zoom Next Extent"		iconClass="zoomnextIcon" 	></div>
+				<div class="tool_button" id="nav_pan" 			title="Pan Map"					iconClass="panIcon" 		></div>
+				<div class="tool_button" id="nav_identify" 		title="Identify"				 							></div>
+
+				<div class="tool_button" id="nav_btn_select" 	title="Parcel Select"										></div>
+				<div class="tool_button" id="nav_measure"		title="Measure"		 									    ></div>
+				<div class="tool_button" id="nav_btn_erase"		title="Clear Map"											></div>
+                	
+                
+			</div>
+		</div>
+        
+        <div id="tabs">
+        	<ul id="tablist">
+            	<li id="LayersToggle"><a href="#">Table of Contents</a></li>
+                <li id="SearchTab"><a href="#">Search</a></li>
+                <li id="ResultsTab"><a href="#">Results</a></li>
+                <li id="HelpTab"><a href="#">About</a></li>
+            </ul>
+        </div>
+
+		<div id="side_content">
+			<div id="left_content">
+            
+				<div id="ResultsPane">
+					
+					<div id="dMeasureWrap" class="ctrl_wipe">
+						<div id="dMeasureTool" ></div>
+					</div>
+
+					<div id="dBufferTool" class="ctrl_wipe">
+						<div class="tocDivTitle">Buffer Selected Parcels</div>
+							<div>Buffer Distance (feet): <input type="text" id="bufferToolDistance" value="200"  /></div>
+							<div><a id="aBufferParcelExec" href="#" title="Execute Buffer tool on selected parcels with the given distance." >Execute Buffer</a></div>
+							
+							<div style="display:none">
+							<div>Buffer Layer Visibilties</div>
+							<div>
+								<input id="chkBufferParcel" type="checkbox" checked="checked">Parcel to Buffer<br />
+								<input type="checkbox" checked="checked">Parcel to Buffer<br />
+							</div>
+						</div>
+					</div>
+					
+					<div id="ResultsPaneTitle"></div>
+					<div id="dResultsSummary"></div>
+                    
+                    <!-- ERIS OUTPUT --><div id="Links_ERIS"></div><div id="Results_ERIS"></div>
+					
+					<div id="r_map_selection" class="ctrl_wipe"></div>
+					<div id="r_map_buffer" class="ctrl_wipe"></div>
+					
+					<div id="dIdentifyResults" class="ctrl_wipe"></div>
+					<div id="dSearchResults" class="ctrl_wipe"></div>
+									
+				</div><!-- ResultsPane-->
+				<div id="treeToc"></div>
+				<div id="SearchPane">
+					<div id="search_menu"><strong>Search: </strong>
+						<a href="#" onclick="f_search_handler('search_PROP');">Property</a>
+						<!-- <a href="#" onclick="f_search_handler("search_FAC");">Facility</a> -->
+						<a href="#" onclick="f_search_handler('search_OWNR');">Owner</a>
+					</div>
+					<div id="search_ALL" style="display:block">
+						<h3>Search Options</h3>
+						<div class="searchAdvancedDiv">
+						<input type="radio" name="rdo_muni_search" id="rdo_muni_searchAll" selected="selected" />
+							<label for="rdo_muni_searchAll">All Municipalities</label>
+							<input type="radio" name="rdo_muni_search" id="rdo_muni_searchSelect">
+							<label for="rdo_muni_searchSelect">Selected Municipalities</label>
+							<div id="search_munis" style="display:none"></div>
+						</div>
+						<div class="searchAdvancedDiv">
+							<input type="radio" name="rdo_qual_search" id="rdo_qual_searchAll" selected="selected" />
+							<label for="rdo_qual_searchAll">All Parcels</label>
+							<input type="radio" name="rdo_qual_search" id="rdo_qual_searchSelect">
+							<label for="rdo_qual_searchSelect">Designated Parcels</label>
+							<div id="search_qual" style="display:none"></div>
+						</div>
+						<div class="searchAdvancedDiv">
+							<input type="radio" name="rdo_landuse_search" id="rdo_landuse_searchAll" selected="selected" />
+							<label for="rdo_landuse_searchAll">All Land Uses</label>
+							<input type="radio" name="rdo_landuse_search" id="rdo_landuse_searchSelect">
+							<label for="rdo_landuse_searchSelect">Selected Land Uses</label>
+							<div id="search_landuse" style="display:none"></div>
+							<div id="r_search_landuse" style="display:none"></div>
+
+						</div>
+						<div class="searchAdvancedDiv">
+							<div>Acreage:
+								<label for="txtAcreageMin">Min:</label><input type="text" id="txtAcreageMin" style="width:40px;" title="Min Acreage" value=""  class="search_field" name="AcrMin" /> &nbsp;&nbsp;
+								<label for="txtAcreageMax">Max:</label><input type="text" id="txtAcreageMax" style="width:40px;" title="Max Acreage" value="" class="search_field" name="AcrMax" />
+							</div>
+						</div>
+					</div>
+
+					<div id="search_PROP" style="display:block">
+						<h3>Search Parcels</h3>
+						<div class="searchParcelSection">
+							<!-- A D D R E S S -->
+							<div title="Search by Property Address" class="search_field" name="Address">
+								<label for="txtQueryAddress">Address:</label><input type="text" id="txtQueryAddress"  />
+							</div>
+						</div>
+						<div class="searchParcelSection">
+							<!-- B L O C K   L O T  -->
+							<div title="Search parcel Block"><label for="txtQueryBlock">Block:</label><input type="text" class="search_field"  id="txtQueryBlock" value="" name="Block" /></div>
+							<div title="Search parcel Lot"><label for="txtQueryLot">Lot:</label><input type="text" class="search_field" id="txtQueryLot"  value="" name="Lot" /></div>
+							<div title="">
+								<input type="checkbox" name="OldBL" value="true" id="b_searchOldBlockLot" checked="checked" /> <label for="b_searchOldBlockLot">Search historical blocks and lots?</label>
+							</div>
+							<div title="Uncheck this box if you would like to do a "wildcard" search. See Help for more details.">
+								<input type="checkbox" name="BlockLotExact" value="true" id="b_searchBlockLotExact" checked="checked" /> <label for="b_searchBlockLotExact">Find only exact matches?</label>
+							</div>
+						</div>
+						<div>
+							<input type="button" class="i_search_button" value="Search for Properties" id="i_btn_search_parcels"/>
+						</div>
+						<!--<div id="r_search_parcel" class="search_results"></div>-->
+					</div>
+                    <div id="search_OWNR">
+						<h3>Owner Search</h3>
+						<label>Owner Name:</label>
+						<input type="text" id="txtQueryOwner" title="Owner Search" value="hartz mountain" />
+						<!--<input type="text" class="search_field"name="Owner" /><br /><br />-->
+						<input type="button" class="i_search_button" value="Search Owners" onclick="f_query_owners_exec()" />
+                    	<div id="r_search_owner" class="search_results"></div>
+                    </div><!-- search_OWNR -->
+                    <div id="search_LND">
+                    	<h3>Landuse</h3>
+							<!-- old spot for landuse -->
+							<input type="button" class="i_search_button" value="Search Landuse" onclick="f_query_landuse_exec()" />
+						</div>
+					</div><!-- search_LND -->
+					<div id="search_FAC">
+						<h3>Facility Search</h3>
+						<label>Facility Name:</label><input type="text" id="txtQueryFacility" title="Facility Name Search" class="search_field" name="Facility" /><br /><br />
+						<input type="button" class="i_search_button" value="Search Facilities" onclick="f_query_facility_exec()" />
+						<div id="r_search_facility" class="search_results"></div>
+					</div>
+                    
+				</div> <!-- Search -->
+				<div id="MapLayers" >
+					<div id="map_images">
+						<div class="toc_heading">Basemap Imagery</div>
+					</div>
+					<div id="map_layers">
+						<div class="toc_heading">Map Layers</div>
+						<div id="map_layer_groups"></div>
+					</div>
+				</div>
+				<div id="HelpPane" style="display: block;">
+                <h2 class="sectionTitle">About</h2>
+                
+                <div class="sidebarContainer">
+                	This version of NJMC’s Municipal Map encompasses 8 years of data collected about its 14-constituent towns, including historical to present geographic information. Municipalities can gain access to these layers and records about properties that falls within their respective municipalities and identify pertinent information about each property in question. The layers include: parcels, land use, zoning, wetlands, riparian, encumbrance, FEMA and much more. In addition, MERI-GIS has been compiling utility data from stormwater manholes to sanitary lines so towns can visualize and further make decision on existing infrastructure and conditions. Imagery accessible on this application ranges from the 1930’s to 2010. New data will become available once they are complete. Visit MERI’s webmaps periodically for timely updates. 
+                </div>
+                <hr>
+                
+                                
+                <h2 class="sectionTitle">Disclaimer</h2>
+                
+                <div class="sidebarContainer">
+                   	The information contained in this site is the best available according to the procedures and standards of the New Jersey Meadowlands Commission (NJMC)/Meadowlands Environmental Research Institute Geographic Information Systems group (MERI-GIS)<a id="disclaimerMoreLink" onclick="toggle_visibility('disclaimerMore'); toggle_visibility('disclaimerMoreLink');" target="_blank" title="read more" style="display:block;">...</a>
+                    
+                    <div id="disclaimerMore" style="display:none;">
+                    In order to maintain the quality and timeliness of the data, MERI-GIS regularly maintains the information in their databases and GIS layers. However, unintentional inaccuracies may occur. MERI-GIS has made every effort to present the information in a clear and understandable way for a variety of users. However, we cannot be responsible for the misuse or misinterpretation of the information presented by this system. Therefore, under no circumstances shall the NJMC/MERI-GIS be liable for any actions taken or omissions made from reliance on any information contained herein from whatever source nor shall the NJMC/MERI-GIS be liable for any other consequences from any such reliance.<br /><br />
+
+All data request shall be made directly to the GIS Department. Processing fees may apply and NJMC’s data distribution agreement is required on all requests. The GIS Department can be contacted at <a href="mailto:merigis@njmeadowlands.gov">merigis@njmeadowlands.gov</a>.<br />
+
+<div style="text-align:right;"><a onclick="toggle_visibility('disclaimerMore'); toggle_visibility('disclaimerMoreLink');"><img src="http://webmaps.njmeadowlands.gov/imagery/images/icons_BK/more_arrow_up.png" title="collapse" /></a></div>
+
+                    
+                    </div>
+                    
+                </div>
+                <hr>
+                <!-- -->
+                <h2 class="sectionTitle" >Help</h2>
+                
+                <div class="sidebarContainer" >
+                   	Need help using this application?<br /><br />
+
+					A full guide covering everything from the basics all the way up to advanced features is provided <a href="help/" target="_blank">here</a>.
+                </div>
+                <hr >
+                
+                <!-- -->
+                <h2 class="sectionTitle">ERIS</h2>
+                
+                <div class="sidebarContainer">
+                                <div id="signInForm">
+                <form id="signInFormNode">
+        
+                    <label class="eris_login_lbl">Username: </label><input type="text" name="userName" class="eris_login_fld" /><br />
+                    <label class="eris_login_lbl">Password: </label><input type="password" name="password" class="eris_login_fld" />
+        
+                </form>
+                    <button id="ERISLogin" onClick="ERISLogin();">Login</button>
+                </div>
+                
+                <pre id="signInResultNode"></pre>
+				                
+                
+                   	
+                    
+                    
+                </div>
+                <hr>
+                
+                
+                <!-- -->
+                <h2 class="sectionTitle">METADATA</h2>
+                
+                <div class="sidebarContainer">
+                   	Need the Metadata?<br /><br />
+
+					A complete listing of all the GIS data is provided <a href="http://apps.njmeadowlands.gov/mapping/metadata/?c=municipal" target="_blank">here</a>.
+                </div>
+                <hr>
+                
+                <!-- -->                
+                <h2 class="sectionTitle">Contact</h2>
+                
+                <div class="sidebarContainer">
+                   	We appreciate your feedback, please let us know what you think about the application using this <a href="http://apps.njmeadowlands.gov/feedback/?i=f&a=1" target="_blank">form.</a>
+                    <br />
+					<br />
+
+                    You can also contact the MERI GIS Department at 201-460-4612
+                </div>
+
+                
+                </div>
+			</div><!-- left_content -->
+		</div><!-- side_content -->
+
+		<div id="footer"> &copy 2011 New Jersey Meadowlands Commission
+			<div id="colapse"> <img src="images/icons_bk/left_arr16_2.png" onclick="coll_mnu();" alt="Collapse Menu" title="Collapse Menu" /></div>
+		</div>
+        
+	</div><!-- innertube -->
+	</div><!-- framecontent -->
+	<div id="expand" >
+		<div id="expand_bttn">
+			<img src="images/arr_right.png" onclick="expnd_mnu();" alt="Expand Menu" title="Expand Menu" />
+		</div>
+	</div>
+	<div id="map"></div>
+
+
+</div><!-- wrapper -->
 <script type="text/javascript">
 
 /*
@@ -45,27 +313,399 @@
 	//		_lbl	-	label
 */
 
-	dojo.require("esri.map"); 
-	dojo.require("esri.tasks.geometry"); 
-	dojo.require("esri.toolbars.navigation"); 
-	dojo.require("esri.dijit.Scalebar"); 
-	dojo.require("esri.tasks.query"); 
-	dojo.require("dijit.form.Button"); 
-	dojo.require("dijit.Toolbar"); 
-	dojo.require("dojo.fx"); 
-	dojo.require("esri.dijit.OverviewMap");
-	dojo.require("esri.dijit.Measurement");
-	console.log("dojo requirements loaded");
 
+var aliases = {
+	
+		"munCodes" : { 
+		
+			"205" : "Carlstadt",
+			"212" : "East Rutherford",
+			"230" : "Little Ferry",
+			"232" : "Lyndhurst",
+			"237" : "Moonachie",
+			"239" : "North Arlington",
+			"249" : "Ridgefield",
+			"256" : "Rutherford",
+			"259" : "South Hackensack",
+			"262" : "Teterboro",
+			"906" : "Jersey City",
+			"907" : "Kearny",
+			"908" : "North bergen",
+			"909" : "Secaucus"
+		},
+		
+		"landUseCodes" : {
+			"000" : "Unclassified",
+			"AL"  : "Altered Lands",
+			"CO"  : "Commercial Office",
+			"CR"  : "Commercial Retail",
+			"CU"  : "Communication Utility",
+			"HM"  : "Hotels and Motels",
+			"ICC" : "Ind. Comm. Complex",
+			"IND" : "Industrial",
+			"PQP" : "Public Services",
+			"RES" : "Residential",
+			"RL"  : "Recreational Land",
+			"TRS" : "Transportation",
+			"VAC" : "Vacant Land",
+			"WAT" : "Water",
+			"WET" : "Wetlands"
+		},
+		
+		"zoneCodes" : {
+			"AV" : "Aviation facilities", 
+			"CP" : "Commercial Park",
+			"EC" : "Environmental Conservation",
+			"HI" : "Heavy Industrial", 
+			"HC" : "Highway Commercial", 
+			"IA" : "Intermodal A", 
+			"IB" : "Intermodal B", 
+			"LIA" : "Light Industrial A", 
+			"LIB" : "Light Industrial B", 
+			"LDR" : "Low Density Residential", 
+			"NC" : "Neighborhood Commercial", 
+			"PR" : "Planned Residential", 
+			"PU" : "Public Utilities", 
+			"RC" : "Regional Commercial", 
+			"TC" : "Transportation Center", 
+			"WR" : "Waterfront Recreation", 
+			"RRR" : "Roads, Rails, ROWs", 
+			"000" : "Unclassified", 
+			"RA" : "Redevelopment Area", 
+			"MZ" : "Multiple Zones", 
+			"CZC-SECA" : "Commercial Zone C - Secaucus", 
+			"LI1-SECA" : "Light Industrial Zone 1 - Secaucus", 
+			"RZA-SECA" : "Residential Zone A - Secaucus", 
+			"WAT" : "Water", 
+			"LID-TET" : "Light Industrial & Distribution Zone - Teterboro", 
+			"RA1-TET" : "Redevelopment Area 1 Zone - Teterboro", 
+			"RA2-TET" : "Redevelopment Area 2 Zone - Teterboro", 
+			"PA" : "Parks and Recreation", 
+			"C-CARL" : "Commercial Zone - Carlstadt", 
+			"LI-CARL" : "Light Industrial - Carlstadt", 
+			"LDR-TET" : "Low Density Residential - Teterboro", 
+			"MCZ-CARL" : "Mixed Commercial Zone - Carlstadt", 
+			"RZ-CARL" : "Residential Zone - Carlstadt", 
+			"RZB-SECA" : "Residential Zone B - Secaucus", 
+			"MNF-MOON" : "Manufacturing Zone - Moonachie", 
+			"R1-MOON" : "1-Family Residential Zone - Moonachie", 
+			"R2-MOON" : "2-Family Residential Zone - Moonachie", 
+			"B1-MOON" : "General Business Zone - Moonachie", 
+			"B2-MOON" : "Limited Business Zone - Moonachie", 
+			"R1-ER" : "Low Density Residential - E Rutherford", 
+			"R2-ER" : "Medium Density Residential - E Rutherford", 
+			"R3-ER" : "Multi-Family Residential - E Rutherford", 
+			"NC-ER" : "Neighborhood Commercial - E Rutherford", 
+			"RC-ER" : "Regional Commercial - E Rutherford", 
+			"PCD-ER" : "Planned Commercial Development - E Rutherford", 
+			"RD1-ER" : "Redevelopment-1 - E Rutherford", 
+			"R1-NA" : "1-Family Residential - N Arlington", 
+			"R2-NA" : "1&2-Family Residential - N Arlington", 
+			"RRRA-NA" : "Ridge Road Redevelopment Area - N Arlington", 
+			"PARA-NA" : "Porete Avenue Redevelopment Area - N Arlington", 
+			"R3-NA" : "Multi-Family Residential - N Arlington", 
+			"I1-NA" : "Light Industrial - N Arlington", 
+			"C3-NA" : "Cemetery - N Arlington", 
+			"P/OS-NA" : "Parks & Open Space - N Arlington", 
+			"W/C-NA" : "Waterways & Creeks - N Arlington", 
+			"SEA" : "Sports and Expositions", 
+			"I-ER" : "Light Industrial -  E Rutherford", 
+			"C2-NA" : "Commercial 2 - N Arlington", 
+			"C1-NA" : "Commercial 1 - N Arlington", 
+			"R1-RU" : "Single Family Residential - Rutherford", 
+			"R1A-RU" : "Single Family Residential - Rutherford", 
+			"R1B-RU" : "Single Family Residential - Rutherford", 
+			"R2-RU" : "Two Family Residential - Rutherford", 
+			"R4-RU" : "Five Story Apartment - Rutherford", 
+			"B1-RU" : "Three Story Office - Rutherford", 
+			"B2-RU" : "Five Story Office - Rutherford", 
+			"B3-RU" : "Three Story Office-Retail - Rutherford", 
+			"B3/SH-RU" : "Business / Senior Housing - Rutherford", 
+			"B4-RU" : "Business / Light Industrial - Rutherford", 
+			"ORD-RU" : "Ten Story Office, Research & Distribution - Rutherford", 
+			"HC-RU" : "Highway Commercial Development - Rutherford", 
+			"PCD-RU" : "Planned Commercial Development - Rutherford", 
+			"R3-RU" : "Three Story Apartment - Rutherford", 
+			"UR1A-RU" : "University / Residential, Single Family - Rutherford", 
+			"C-RF" : "Commercial - Ridgefield", 
+			"C/HRH-RF" : "Commercial / High Rise Hotel - Ridgefield", 
+			"GA/TH C-RF" : "GA/TH Cluster - Ridgefield", 
+			"LM-RF" : "Light Manufacturing - Ridgefield", 
+			"NB-RF" : "Neighborhood Business - Ridgefield", 
+			"O/TH-RF" : "Office / T.H. - Ridgefield", 
+			"OC-RF" : "Office Commercial - Ridgefield", 
+			"OMR-RF" : "Office Mid Rise - Ridgefield", 
+			"OMRH-RF" : "Office Mid Rise Hotel - Ridgefield", 
+			"OFR-RF" : "One Family Residential - Ridgefield", 
+			"P/SP-RF" : "Public / Semi Public - Ridgefield", 
+			"TH/SRCH-RF" : "TH / SR Citizens Housing - Ridgefield", 
+			"T-RF" : "Townhomes - Ridgefield", 
+			"TFR-RF" : "Two Family Residential - Ridgefield", 
+			"RB-LF" : "One & Two Family Residential - Little Ferry", 
+			"RM-LF" : "Multifamily Residential - Little Ferry", 
+			"BH-LF" : "Highway & Regional Business - Little Ferry", 
+			"BN-LF" : "Neighborhood Business - Little Ferry", 
+			"IR-LF" : "Restricted Industrial - Little Ferry", 
+			"IG-LF" : "General Industrial - Little Ferry", 
+			"P-LF" : "Public Facilities - Little Ferry", 
+			"RA-LF" : "One Family Residential - Little Ferry", 
+			"P/SP-NA" : "Public/Semi-Public - N Arlington", 
+			"A-SH" : "Residential - South Hackensack", 
+			"B-SH" : "Commercial - South Hackensack", 
+			"C-SH" : "Industrial - South Hackensack", 
+			"M-SH" : "Mixed - South Hackensack", 
+			"SCR-SH" : "Senior Citizen Multifamily Res - South Hackensack", 
+			"RA-LYND" : "One Family Residence - Lyndhurst", 
+			"RB-LYND" : "One and Two Familly Residence - Lyndhurst", 
+			"RC-LYND" : "Medium Density Residential - Lyndhurst", 
+			"B-LYND" : "Business - Lyndhurst", 
+			"M1-LYND" : "Light Industrial - Lyndhurst", 
+			"M2-LYND" : "Heavy Industrial - Lyndhurst", 
+			"CGI-LYND" : "Commercial-General Industrial - Lyndhurst", 
+			"R-1-K" : "One Family Residential - Kearny", 
+			"OS-K" : "Open Space Parks and Recreation District - Kearny", 
+			"SU-1-K" : "Special Use 1 - Kearny", 
+			"SU-3_K" : "Special Use 3 - Kearny", 
+			"SOCD-K" : "Street Oriented Commercial District - Kearny", 
+			"SKI-N-K" : "South Kearny Industrial North - Kearny", 
+			"SKI-S-K" : "South Kearny Industrial South - Kearny", 
+			"RDP-K" : "Research Distribution Park - Kearny", 
+			"RD-K" : "Residential District - Kearny", 
+			"R-A-K" : "Redevelopment Area - Kearny", 
+			"R-3-K" : "Multi-Family Residential - Kearny", 
+			"R-2B-K" : "One_Two Family Residential/Hospital - Kearny", 
+			"R-2-K" : "One_Two Family Residential - Kearny", 
+			"PRD-K" : "Planned Residential Development - Kearny", 
+			"MXD-K" : "Mixed Use District - Kearny", 
+			"MP-K" : "Marshland Preservation - Kearny", 
+			"M-K" : "Manufacturing - Kearny", 
+			"LTI-K" : "Light Industrial - Kearny", 
+			"LID-B-K" : "Light Industrial Distribution B - Kearny", 
+			"LID-A-K" : "Light Industrial Distribution A - Kearny", 
+			"LCD-K" : "Large Scale Commercial District - Kearny", 
+			"H-I-K" : "Heavy Industrial - Kearny", 
+			"ESCD-K" : "Existing Shopping Center District - Kearny", 
+			"CEM-K" : "Cemetery - Kearny", 
+			"C-4-K" : "General Commercial - Kearny", 
+			"C-3-K" : "Community Business - Kearny", 
+			"C-2-K" : "Neighborhood Business - Kearny", 
+			"C-1-K" : "Office - Kearny", 
+			"ARLD-K" : "Adaptive Reuse Loft District - Kearny", 
+			"ACD-K" : "Automobile Oriented Commercial District - Kearny", 
+			"LI-K" : "   Limited Industrial- Kearny", 
+			"R1-NB" : "Low Density Residential - N Bergen", 
+			"R2-NB" : "Intermediate Density Residential - N Bergen", 
+			"R3-NB" : "Moderate Density Residential - N Bergen", 
+			"C1-NB" : "General Business - N Bergen", 
+			"C1A-NB" : "General Business Limited Mixed Use - N Bergen", 
+			"C1B-NB" : "General Business Limited Mixed Use Bergenline - N Bergen", 
+			"C1C-NB" : "General Business Mixed Use - N Bergen", 
+			"C1R-NB" : "Commercial Residential District - N Bergen", 
+			"C2-NB" : "Highway Business - N Bergen", 
+			"I-NB" : "Industrial - N Bergen", 
+			"P1-NB" : "Riverside - N Bergen", 
+			"P2-NB" : "Edgecliff - N Bergen", 
+			"P3-NB" : "River Road West - N Bergen", 
+			"TRD-NB" : "Tonnelle Ave Redevelopment Area - N Bergen", 
+			"ET-NB" : "East Side Tonnelle Ave Zone - N Bergen", 
+			"GL-NB" : "Granton Ave-Liberty Ave-69th Street Zone - N Bergen", 
+			"KO-NB" : "Kennedy Overlay Zone - N Bergen", 
+			"TO-NB" :"Townhouse Overlay Zone - N Bergen"
+		},
+		
+		"fieldNames" :{
+			"PID" : "PID", 
+			"PAMS Pin" : "PAMS Pin", 
+			"OLD_BLOCK" : "Old Block", 
+			"OLD_LOT" : "Old Lot", 
+			"PROPERTY_ADDRESS" : "Address", 
+			"TAX_ACRES" : "Tax Acres", 
+			"CITY_STATE" : "City, State",
+			"MAP_ACRES" : "GIS Acres",
+			"MUN_CODE" : "Municipality",
+			"LANDUSE_CODE" : "Landuse",
+			"ZONE_CODE" : "Zone",
+			'NAME' : 'Name',
+			"ADDRESS" : 'Address',
+			"FIRM_PAN" : "Firm Panel #",
+			"TMAPNUM" : "Tidelands Map #",
+			"FLD_ZONE" : "Flood Zone",
+			"STATIC_BFE" : "Static Base Flood Elevation",
+			"LABEL07" : "Wetland Label",
+			"TYPE07" : "Wetland Type",
+			"LU07" : "Anderson landuse class",
+			"RECIEVINGWATER" : "Receiving Water",
+			"NAME10" : "Voting District Label", 
+			
+			"FACILITY_NAME" : "Facility Name", 
+			"BUILDING_LOCATION" : "Building Location", 
+			"TOTALBLDG_SF" : "Total Building Square Feet", 
+			"PHYSICAL_ADDRESS" : "Address", 
+			"PHYSICAL_CITY" : "City", 
+			"PHYSICAL_ZIP" : "Zip Code", 
+			"COMPANY_CONTACT" : "Company Contact", 
+			"CONTACT_PHONE" : "Phone", 
+			"OFFICIAL_CONTACT" : "Official Contact", 
+			"OFFICIAL_PHONE" : "Phone", 
+			"EMERGENCY_CONTACT" : "Emergency Contact", 
+			"EMERGENCY_PHONE" : "Phone", 
+			"CAS_NUMBER" : "CAS Number", 
+			
+			"LandUse_Code" : "Landuse", 
+			"Zone_Code" : "Zoning", 
+			"LANDUSE_CODE" : "Landuse", 
+			"ZONE_CODE" : "Zoning"
+		
+		}
+		
+	};
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+//
+//  D E P E N D E N C I E S
+//
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+	var dependencies = {
+		"landuse":{
+			"isLoaded":false
+		},
+		"legend":{
+			"isLoaded":false
+		}
+	};			
+	
+	var loadingDialog;
+	
+	// require dojo and esri libs and parse
+	require( 
+		[	
+				//"dgrid/OnDemandGrid", 
+				//"dgrid/Selection", 
+				//"dojo/store/Memory", 
+				//"esri/Map", 
+				//"esri/layers/FeatureLayer", 
+				//"dojo/_base/declare", 
+				//"dojo/number", 
+				//"dojo/parser", 
+				//"dojo/domReady!"
+				
+
+				//dijits
+				"dijit/Dialog",
+				"esri/dijit/Measurement", 
+				"dijit/layout/BorderContainer", 
+				"dijit/layout/TabContainer", 
+				"dijit/layout/ContentPane",
+				
+				"esri/dijit/Scalebar", 
+				"esri/dijit/OverviewMap",
+				//"esri/dijit/Popup",
+
+				//"dijit.Toolbar" // no longer need toolbar since we rolled our own
+				
+				
+				// map components
+				"esri/Map",
+				"esri/toolbars/navigation",
+				
+				// tasks
+				"esri/tasks/geometry",
+				"esri/tasks/query",
+				"dojo/domReady!",
+	
+		],
+		
+		function(  ){
+		
+			console.log("Dom Ready.....");
+			
+			loadingDialog = new dojo.dijit.Dialog({
+				title: "Municipal Map",
+				content: "<div style=\"text-align:center;margin-top:30px;margin-bottom:30px;\">"+
+							"<h2>Welcome to MERI's Municipal Map</h2>"+
+							"<div style=\"margin:20px 0 20px 0;\"><img src=\"map_loading_40.gif\" ></div>"+
+							"<h3 style=\"padding:0 40px 0 40px;\">Please be patient while the web application is prepared.</h3>"+
+						 "</div>",
+						 
+				style: "width: 360px;height:"
+			});
+			
+			loadingDialog.show();
+	
+			// request landuse and build object.
+			dojo.xhrGet({
+				// request the url for the LandUse Layer definition, including all domains
+				url: "http://webmaps.njmeadowlands.gov/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/3?f=json",
+				handleAs: "json",
+				load: function(json) {
+					//alert("The message is: " + result);
+					console.log("json response:", json);
+					for( field in json.fields ){
+						if( json.fields[field].name == "LANDUSE_CODE"){
+							landuse_json = json.fields[field].domain.codedValues;
+						}
+					}
+					// now that data is loaded
+					dependencies["landuse"].isLoaded = true;
+					loadContinue( );
+				},
+				error: function() {
+					// in case of error fail to these values - 061312
+					landuse_json = [
+						{"code":"CO","name":"Commercial Office"},
+						{"code":"CR","name":"Commercial Retail"},
+						{"code":"HM","name":"Hotels and Motels"},
+						{"code":"IND","name":"Industrial"},
+						{"code":"ICC","name":"Industrial Commercial Complex"},
+						{"code":"PQP","name":"Public/Quasi Public Services"},
+						{"code":"RL","name":"Recreational Land"},
+						{"code":"RES","name":"Residential"},
+						{"code":"TRS","name":"Transportation"},
+						{"code":"WAT","name":"Water"},
+						{"code":"WET","name":"Wetlands"},
+						{"code":"000","name":"Unclassified"},
+						{"code":"CU","name":"Communication Utility"},
+						{"code":"MU","name":"Multiple Uses"},
+						{"code":"VAC","name":"Open Lands"},
+						{"code":"TL","name":"Transitional Lands"}
+					];
+					
+					dependencies["landuse"].isLoaded = true;
+					loadContinue( );
+					
+					//f_search_landuse_build();
+					
+				}
+			});
+			
+			// request legend from MunicipalMap_live service and set object.
+			dojo.xhrGet({
+				// The URL of the request
+				url: DynamicLayerHost + "/ArcGIS/rest/services/Municipal/MunicipalMap_live/MapServer/legend?f=json",
+				// The success callback with result from server
+				handleAs:"json",
+				handle: function( content ) {
+					console.log( "map_legend", content);
+					map_legend = content;
+					dependencies["legend"].isLoaded = true;
+					loadContinue( );
+				}			
+			});	
+
+			dojo.connect( window, "onresize", resize_content_pane );			
+
+//
+}); // END onReady LOAD
+		
+	
+		
 	// map globals;
-	var M_meri, basemap_dynamic, navToolbar,
+	var mmm, M_meri, basemap_dynamic, navToolbar, tool_selected,
 		LD_base, LD_visible = [],
 		LD_flooding, LD_flood_visible =[],
 		ERIS_base;
 		
-	// selected tool item. default to select
-	self.tool_selected = "select";
-
 	// ALL Local Variables converted to MapObject
 	
 	// initialize all query and query tasks
@@ -131,27 +771,16 @@
 
 	// IMAGE LAYER OBJECT. SET ON LOAD AND WHEN IMAGE LAYER IS TOGGLED
 	var IL_basemap;
-
 	// templates for features
+
 	// simple objects that can be copied on each template usage
 	// provides one place to edit all templates
 
 	var F_IW_templates = {
 
 		"parcel":{
-			"title":"${FACILITYNAME}",
-			content:
-				"<div style=\"padding:6px;\">"+
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Municipality</span> : <span class=\"c_IW_attrib_data\">${MUN_CODE}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">PAMS Pin</span> : <span class=\"c_IW_attrib_data\">${PAMS_PIN}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Block</span> : <span class=\"c_IW_attrib_data\">${BLOCK}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Lot</span> : <span class=\"c_IW_attrib_data\">${LOT}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Old Block</span> : <span class=\"c_IW_attrib_data\">${OLD_BLOCK}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Old Lot</span> : <span class=\"c_IW_attrib_data\">${OLD_LOT}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Address</span> : <span class=\"c_IW_attrib_data\">${PROPERTY_ADDRESS}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">Tax Acres</span> : <span class=\"c_IW_attrib_data\">${TAX_ACRES}</span></div>" +
-				"<div class=\"c_IW_attrib_row\"><span class=\"c_IW_attrib_title\">GIS Acres</span> : <span class=\"c_IW_attrib_data\">${MAP_ACRES}</span></div>" +
-				"</div>"
+			"title": f_getWindowTitle,
+			"content": f_getWindowContent
 		},
 		parcel_buffer:{
 			"title":"${PID}<br /><a class=\"parcelTools buffer\" href=\"#test\">Buffer</a>",
@@ -159,12 +788,12 @@
 		}
 	}
 
+	
 	// imagery layers.. toc imagery is dynamically built from JSON object
 	
 	var map_legend, map_legend_eris;
 	
 	// map layers... toc for layers is dynamically build from JSON object
-	
 	
 	var map_layers_flooding_json = {
 		
@@ -207,8 +836,91 @@
 		{"id":"MD-OMD","name":"Borderline Parcels","desc":"All parcels partially in and partially out of the NJMC District"}
 	];
 
-	var aliases = {};
 	
+	
+
+	var mapLayersJSON = [		
+			{"name":"Environmental",
+				"id":"environ",
+				"layers":[	
+					{"id":"14","name":"FEMA Panel","vis":1,"ident":1,"desc":"FEMA Panel"},
+					{"id":"25","name":"Riparian Claim (NJDEP)","vis":0,"ident":1,"desc":"Riparian Claim (NJDEP)"},
+					{"id":"27","name":"FEMA (100-YR FLOOD)","vis":0,"ident":1,"desc":"FEMA (100-YR FLOOD)"},
+					{"id":"28","name":"Wetlands (DEP)","vis":0,"ident":1,"desc":"Wetlands (DEP)"}
+				]
+			},
+			{"name":"Hydro",
+				"id":"hydro",
+				"layers":[	
+					{"id":1,"name":"Tidegates","vis":1,"ident":1,"desc":"Tidegates"},
+					{"id":2,"name":"Creek Names","vis":1,"ident":0,"desc":"Creek Names"},
+					{"id":13,"name":"Drainage","vis":1,"ident":1,"desc":"Drainage"},
+					{"id":23,"name":"Hydro Lines - Wetland Edge","vis":1,"ident":1,"desc":"Hydro Lines - Wetland Edge"},
+					{"id":24,"name":"Waterways","vis":0,"ident":0,"desc":"Waterways"}
+				]
+			},
+			{"name":"Infrastructure/ Utilities",
+				"id":"inf_util","layers":[	
+					{"id":5,"name":"Stormwater Catchbasins","vis":0,"ident":1,"desc":"Stormwater Catchbasins"},
+					{"id":6,"name":"Stormwater Manholes","vis":0,"ident":1,"desc":"Stormwater Manholes"},
+					{"id":7,"name":"Stormwater Outfalls","vis":0,"ident":1,"desc":"Stormwater Outfalls"},
+					{"id":8,"name":"Stormwater Lines","vis":0,"ident":1,"desc":"Stormwater Lines"},
+					{"id":9,"name":"Sanitary Manhole","vis":0,"ident":1,"desc":"Sanitary Manhole"},
+					{"id":10,"name":"Sanitary Lines","vis":0,"ident":1,"desc":"Sanitary Lines"},
+					{"id":11,"name":"Hydrants","vis":1,"ident":1,"desc":"Hydrants"}
+				]
+			},
+			{"name":"Political / Jurisdiction",
+				"id":"planning_cad",
+				"layers":[	
+					{"id":3,"name":"NJMC District","vis":1,"ident":0,"desc":"NJMC District"},
+					{"id":4,"name":"Municipal Boundaries","vis":1,"ident":0,"desc":"Municipal Boundaries"},
+					{"id":20,"name":"Block Limit","vis":1,"ident":0,"desc":"Block Limit"},
+					{"id":21,"name":"Parcel Lines","vis":1,"ident":0,"desc":"Parcel Lines"},
+					{"id":26,"name":"Buildings","vis":1,"ident":1,"desc":"Buildings"},
+					{"id":31,"name":"Land Use","vis":0,"ident":1,"desc":"Land Use"},
+					{"id":32,"name":"Zoning","vis":0,"ident":1,"desc":"Zoning"},
+					{"id":22,"name":"Encumbrance/Easements","vis":0,"ident":1,"desc":"Encumbrance/Easements"},
+					{"id":30,"name":"Census Blocks 2010","vis":0,"ident":0,"desc":"Census Blocks 2010"},
+					{"id":29,"name":"Voting Districts 2010","vis":0,"ident":1,"desc":"Voting Districts 2010"}
+				]
+			},
+			{"name":"Topographic & Planimetrics",
+				"id":"topo_plan",
+				"layers":[	
+					{"id":0,"name":"Spot Elevations","vis":0,"ident":1,"desc":"Spot Elevations"},
+					{"id":15,"name":"Fence Lines","vis":0,"ident":1,"desc":"Fence Lines"},
+					{"id":16,"name":"Contour Lines","vis":0,"ident":1,"desc":"Contour Lines"}
+				]
+			},
+			{"name":"Transportation",
+				"id":"trans",
+				"layers":[	
+					{"id":12,"name":"DOT Roads","vis":1,"ident":1,"desc":"DOT Roads"},
+					{"id":19,"name":"Bridges - Overpass","vis":1,"ident":0,"desc":"Bridges - Overpass"},
+					{"id":17,"name":"Rails","vis":1,"ident":1,"desc":"Rails"},
+					{"id":18,"name":"Roads ROW","vis":1,"ident":1,"desc":"Roads ROW"}
+				]
+			}
+		];
+	
+	var imageryLayersJSON = [
+			{"id":"IMG_1930_BW","title": "1930 Black and White (NJDEP)", "desc": "1930 Black and White Imagery from the NJDEP"},
+			{"id":"IMG_1958_BW","title": "1958 Black and White (NJDEP)", "desc": "1958 Black and White Imagery from the NJDEP"},
+			{"id":"IMG_1969_BW","title": "1969 Black and White (NJMC)", "desc": "1969 Black and White Imagery from the NJMC"},
+			{"id":"IMG_1978_BW","title": "1978 Black and White (NJMC)", "desc": "1978 Black and White Imagery from the NJMC"},
+			{"id":"IMG_1985_BW","title": "1985 Black and White (NJMC)", "desc": "1985 Black and White Imagery from the NJDEP"},
+			{"id":"IMG_1992_BW","title": "1992 Black and White (NJMC)", "desc": "1992 Black and White Imagery from the NJMC"},
+			{"id":"IMG_1995-97_CIR","title": "1995-97 Color Infrared (NJDEP)", "desc": "1995-1997 Color Infrared Imagery from the NJDEP"},
+			{"id":"IMG_2001_C","title":"2001 Color (NJMC)","desc":"2001 True Color Imagery from GEOD"},
+			{"id":"IMG_2002_BW","title": "2002 Black and White (NJMC)", "desc": "2002 Black and White from the NJMC"},
+			{"id":"IMG_2002_C","title": "2002 Color Infrared (NJDEP)", "desc": "2002 Color Infrared Imagery from the NJDEP"},
+			{"id":"IMG_2008_C","title": "2008 Color (NJDEP)", "desc": "2008 True Color Imagery from the NJDEP"},
+			{"id":"IMG_2009_C","title": "2009 Color (NJMC)", "desc": "2009 True Color Imagery from the NJMC"},
+			{"id":"IMG_2010_C","title": "2010 Color (Hudson County)", "desc": "2010 True Color Imagery from Hudson County. This imagery only covers the Hudson County portion of the NJMC District"}
+		];
+	
+			
 	var landuse_json;
 	
 	// layer id and fields to display
@@ -243,15 +955,19 @@
 	// non map globals
 	var SearchDivs = ["search_PROP","search_OWNR","search_FAC"];
 	
+	// todo:clean up randomly scoped vars
 	var search_LandUseIDs = [];
-
 	var GV_current_ownerid;
 	var GV_searchtool_current;
 	
+	
+	
 	//var DynamicLayerHost = "http://"+ location.hostname;
 	var DynamicLayerHost = "http://webmaps.njmeadowlands.gov";
-	
-	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+		
+		
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	//
 	//  D Y N A M I C   L A Y E R   L I S T
 	//
@@ -265,7 +981,7 @@
 	//
 	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-	function f_layer_list_build( mapLayersJSON ) {
+	function f_layer_list_build(  ) {
 		
 		console.log("mapLayersJSON", mapLayersJSON);
 	
@@ -484,7 +1200,7 @@
 
 		// loop through all checkboxes; if checked, append to to visibilities array
 		dojo.forEach( inputs, function( input ){
-		  if ( input.checked ) LD_eris_visible.push( input.id.replace( "m_layer_", ""));
+		  if ( input.checked ) LD_eris_visible.push( input.id.replace( "m_layer_", "" ));
 		});
 
 		//if there aren"t any layers visible set the array to be -1
@@ -520,7 +1236,7 @@
 	//  imagery base map
 	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-	function f_imagery_list_build( imageryLayersJSON ){
+	function f_imagery_list_build( ){
 		console.log("Imagery Layers JSON:", imageryLayersJSON);
 		
 		dojo.forEach( imageryLayersJSON, function( img_lyr, index ){
@@ -532,8 +1248,8 @@
 			// create a new input radio element and assig its class,name,id and onclick event
 			var e_rdo = dojo.doc.createElement("input");
 			e_rdo.type = "radio";
-			e_rdo.setAttribute("class","img_layer_rdo");
-			e_rdo.setAttribute("name","img_rdos");
+			e_rdo.setAttribute( "class", "img_layer_rdo" );
+			e_rdo.setAttribute( "name", "img_rdos" );
 			e_rdo.id = img_lyr.id;
 
 			e_rdo.setAttribute("onclick", "f_image_layer_toggle(\""+ img_lyr.id +"\")");
@@ -559,7 +1275,7 @@
 
 		IL_basemap = new esri.layers.ArcGISImageServiceLayer( DynamicLayerHost + "/ArcGIS/rest/services/Imagery/" + img_layer + "/ImageServer");
 
-		M_meri.addLayer(IL_basemap,0);
+		M_meri.addLayer( IL_basemap, 0 );
 	}
 
 	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -579,18 +1295,19 @@
 	function f_map_click_handler( evt_click ){
 
 		// debug logging
-		console.log("map clicked:\n  current tool: "+ tool_selected);
+		console.log("map clicked:\n  current tool: "+ tool_selected );
 
 		switch( tool_selected ){
 			case "select": f_parcel_selection_exec( evt_click ); break;
 			case "buffer": f_parcel_buffer_exec( evt_click ); break;
 			case "identify": f_map_identify_exec( evt_click ); break;
 			case "measure":break;
+			case "pan":break;
 		}
 	}
 
 	
-	function f_map_identify_init(){
+	function f_map_identify_init( ){
 	
 		IT_Map_All = new esri.tasks.IdentifyTask( DynamicLayerHost + "/ArcGIS/rest/services/Municipal/MunicipalMap_live/MapServer" );
 		IP_Map_All = new esri.tasks.IdentifyParameters();
@@ -713,7 +1430,14 @@
 				target_div = "r_map_selection";
 				child_div = "selParcel_" + oid;
 				break;
-
+			
+			case "parcel":
+				graphics_layer = GL_query_parcel;
+				target_div = "dSearchResults";
+				//child_div = "searchParcel_" + oid;
+				child_div = "r_parcel_" + oid;
+				break;
+				
 			case "buffer":
 				graphics_layer = GL_buffer_selected_parcels;
 				target_div = "r_map_buffer";
@@ -745,12 +1469,7 @@
 				child_div = "selParcelOwners_" +oid;
 				break;
 
-			case "parcel":
-				graphics_layer = GL_query_parcel;
-				target_div = "dSearchResults";
-				//child_div = "searchParcel_" + oid;
-				child_div = "r_parcel_" + oid;
-				break;
+
 		}
 		
 		console.log("Output Div: " + target_div + "\nChild Div: "+ child_div + "\n");
@@ -779,21 +1498,42 @@
 			case "flash":
 				for( var x=0; x < graphics_layer.graphics.length; x++){
 					if( graphics_layer.graphics[ x ].attributes[ object_attr ] == oid ){
+						
+						var divParcel = dojo.byId( child_div );
+						divParcel.scrollIntoView();
+						
+						var divFlashColor = new dojo.Color( [ 98, 194, 204] )
+						
 						// get current symbol so we can put it back correctly
 						var curSymbol = graphics_layer.graphics[x].symbol;
+						
 						var flashSymbol = new esri.symbol.SimpleFillSymbol( 
 								esri.symbol.SimpleFillSymbol.STYLE_SOLID,
-								new esri.symbol.SimpleLineSymbol( esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color( [98,194,204] ), 2),
-								new dojo.Color([98,194,204,0.5])
+								new esri.symbol.SimpleLineSymbol( esri.symbol.SimpleLineSymbol.STYLE_SOLID, divFlashColor, 2),
+								new dojo.Color( [ 98, 194, 204, 0.5 ] )
 							);
 						
-						graphics_layer.graphics[x].setSymbol(flashSymbol);
-
-						setTimeout( function(){ graphics_layer.graphics[ x ].setSymbol( curSymbol );
-							setTimeout( function(){ graphics_layer.graphics[ x ].setSymbol( flashSymbol );
-								setTimeout( function(){ graphics_layer.graphics[ x ].setSymbol( curSymbol );}, 750)
-							}, 750)
-						}, 750)
+						graphics_layer.graphics[x].setSymbol( flashSymbol );
+						divParcel.style.backgroundColor = divFlashColor;
+						
+						setTimeout( 
+							function( ){ 
+								graphics_layer.graphics[ x ].setSymbol( curSymbol );
+								divParcel.style.backgroundColor = "";
+							
+								setTimeout( 
+									function( ){ 
+										graphics_layer.graphics[ x ].setSymbol( flashSymbol );
+										divParcel.style.backgroundColor = divFlashColor;
+										
+										setTimeout( 
+											function( ){ 
+												graphics_layer.graphics[ x ].setSymbol( curSymbol ); 
+												divParcel.style.backgroundColor = "";
+												
+											}, 750 )
+									}, 750 )
+							}, 750 )
 						break;
 					}
 				}
@@ -815,7 +1555,7 @@
 				break;
 		}
 		
-		f_summarize_totals( graphics_layer.graphics );
+		f_summarize_totals( graphics_layer.graphics, type );
 		
 	}
 
@@ -981,7 +1721,7 @@
 			el_viewMoreToggleLink.id="detail_view_a_"+featureAttributes[object_attr];
 			el_viewMoreToggleLink.setAttribute("href","#");
 			el_viewMoreToggleLink.innerHTML = "-- View More --";
-			el_viewMoreToggleLink.setAttribute("onclick","f_result_detail(\"parcel\",\""+el_viewMoreDiv.id+"\","+featureAttributes[object_attr]+","+ featureAttributes["oid"] +")");
+			el_viewMoreToggleLink.setAttribute("onclick","f_result_detail(\"parcel\",\""+el_viewMoreDiv.id+"\"," + featureAttributes[object_attr] + "," + featureAttributes["oid"] +")");
 			
 			// add anchor to toggle div
 			el_viewMoreToggle.appendChild( el_viewMoreToggleLink );
@@ -1009,8 +1749,88 @@
 			dojo.byId( target_div ).appendChild( el_parcel );
 		}
 		
-		f_summarize_totals( GL_container.graphics );
+		f_summarize_totals( GL_container.graphics, type );
 
+	}
+	
+	function f_getWindowTitle( graphic ){
+		var attribs = graphic.attributes;
+		return "<div style=\"border-bottom:1px solid #CCC\">" + attribs.PROPERTY_ADDRESS + "</div>" + 
+		
+			"<div style=\"text-align:center;margin-top:5px\" class=\"dParcelItem\">" +
+				"<a onclick=\"f_feature_action('zoomTo', 'selection', 'PID', '" + attribs.PID + 	"')\" href=\"#\">Zoom To</a> " +
+				"<a onclick=\"f_feature_action('panTo',  'selection', 'PID', '" + attribs.PID + 	"')\" href=\"#\">Pan To</a> " +
+				"<a onclick=\"f_feature_action('flash',  'selection', 'PID', '" + attribs.PID + 	"')\" href=\"#\">Flash</a> " +
+				"<a href=\"http://webmaps.njmeadowlands.gov/municipal/print_parcel_info.php?id=" + attribs.PID + "\" target=\"_blank\">Print</a> " +
+				"<a  onclick=\"f_feature_action('remove', 'selection', 'PID', '" +  attribs.PID + 	"')\" href=\"#\">Remove</a> " +
+			"</div>"
+	}
+	
+	function f_getWindowContent( graphic ){
+	
+		var attribs = graphic.attributes;
+        //make a tab container 
+			
+		// TAB CONTAINER
+        var tc = new dijit.layout.TabContainer({
+          style: "width:100%;height:220px;left:0;top:0",
+		  region:"top"
+        }, dojo.create("div"));
+		
+        // TAB
+        var tab1 = new dijit.layout.ContentPane({
+          title: "Selected Parcel",
+          content: 
+		  "<div >" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Municipality</span>:	<span class=\"value value_selection\"> " + attribs.MUN_CODE			+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">PAMS Pin</span>:		<span class=\"value value_selection\"> " + attribs.PAMS_PIN			+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Block</span>:			<span class=\"value value_selection\"> " + attribs.BLOCK				+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Lot</span>:			<span class=\"value value_selection\"> " + attribs.LOT				+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Old Block</span>:		<span class=\"value value_selection\"> " + attribs.OLD_BLOCK		 	+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Old Lot</span>:		<span class=\"value value_selection\"> " + attribs.OLD_LOT			+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Address</span>:		<span class=\"value value_selection\"> " + attribs.PROPERTY_ADDRESS	+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">Tax Acres</span> :		<span class=\"value value_selection\"> " + attribs.TAX_ACRES	 		+ "</span></div>" +
+			"<div class=\"IW_att_row\"><span class=\"field field_selection\">GIS Acres</span> :		<span class=\"value value_selection\"> " + attribs.MAP_ACRES	 		+ "</span></div>" +
+			
+			"</div>"
+        });
+		
+		 //display a dojo pie chart for the male/female percentage
+        var tab2 = new dijit.layout.ContentPane({
+          title: "Property Photo",
+          content: "<div class=\"IW_map_div\">"+
+				
+				"<img src=\"http://webmaps.njmeadowlands.gov/municipal/MunicipalPhotos/Photos/"+ attribs.MUN_CODE.substring(1,4) + " " + attribs.BLOCK + " " + attribs.LOT +".jpg\" class=\"property_photo\">"+
+		  
+			"</div>"
+        });
+
+		// ADD TABS TO CONTAINER
+        tc.addChild(tab1);
+        tc.addChild(tab2);
+		
+		var bc = new  dijit.layout.BorderContainer({
+			//style: "height: 280px; width: 440px;",
+			style: "height: 100%; width: 100%;",
+			splitter:false
+        });
+		
+ //		var cp1 = new  dijit.layout.ContentPane({
+            // region:"top",
+			// content: "<div>" +
+					// "<a  onclick=\"f_feature_action('remove', 'selection', 'PID', '" +  attribs.PID + 	"')\" href=\"#\">Remove</a> " +
+					// "<a onclick=\"f_feature_action('zoomTo', 'selection', 'PID', '" + attribs.PID + 	"')\" href=\"#\">Zoom To</a> " +
+					// "<a onclick=\"f_feature_action('panTo',  'selection', 'PID', '" + attribs.PID + 	"')\" href=\"#\">Pan To</a> " +
+					// "<a onclick=\"f_feature_action('flash',  'selection', 'PID', '" + attribs.PID + 	"')\" href=\"#\">Flash</a> " +
+					// "<a href=\"http://webmaps.njmeadowlands.gov/municipal/print_parcel_info.php?id=" + attribs.PID + "\" target=\"_blank\">Print</a> " +
+					// "</div>"
+        // });
+		
+		//bc.addChild(cp1);
+		bc.addChild(tc);
+	
+		return bc.domNode;
+				
 	}
 	
 	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1171,7 +1991,9 @@
 
 			// set symbol and innfo window.. use templates
 			G_parcel_selected.setSymbol(S_buffer_parcel);
-			G_parcel_selected.setInfoTemplate(new esri.InfoTemplate(F_IW_templates.parcel));
+			
+			
+			G_parcel_selected.setInfoTemplate( new esri.InfoTemplate( F_IW_templates.parcel ) );
 			
 			// set the buffer parameters.. default to 200 foot
 			var BP_parcel_selection = new esri.tasks.BufferParameters();
@@ -1321,9 +2143,9 @@
 		//featureSet_ownerParcels = featureSets;
 
 		// RelationshipQuery can return multiple featureSets.. use object iteration
-		var type="parcel_owners";
-		var object_attr="PID";
+		var type = "parcel_owners";
 		
+		var object_attr="PID";
 		var s = "";
 
 		for(featureSet in featureSets){
@@ -1845,6 +2667,11 @@
 
 	function f_search_landuse_build( ){
 
+		if( typeof( landuse_json.length ) == "undefined" ){
+			// console.log.. 
+			return;
+		}
+		
 		var e_div_checkboxs = dojo.doc.createElement("div");
 		e_div_checkboxs.id = "selSearchLanduse";
 
@@ -2015,9 +2842,11 @@
 		M_meri.reposition();
 	}
 
-	function showerror( error ){ console.log(error.toString());	}
+	function showerror( error ){ 
+		console.log("ERROR", error, error.toString() );
+	}
 	
-	function f_result_detail( type, target_el, pid, oid){
+	function f_result_detail( type, target_el, pid, oid ){
 	
 		// type = parcel
 		// el = detail_selParcel_41553
@@ -2151,7 +2980,9 @@
 		
 	}
 	
-	function f_summarize_totals( graphics ){
+	function f_summarize_totals( graphics, clickType ){
+		
+		console.log("Click Type:",clickType);
 		
 		var totalAcres = 0,
 			field = "MAP_ACRES",
@@ -2165,7 +2996,7 @@
 		});
 	
 		var e_summary = dojo.doc.createElement("div");
-			e_summary.innerHTML = graphics.length + " parcels were found. ( "+ Math.round( totalAcres * 100 ) / 100 + " acres )";
+			e_summary.innerHTML =  graphics.length + " "  + ( graphics.length == 1 ? " parcel was found. " : "parcels were found." ) +  "( "+ Math.round( totalAcres * 100 ) / 100 + " acres )";
 		
 		var e_export = dojo.doc.createElement("a")
 			e_export.innerHTML = "Export Results to Excel";
@@ -2179,6 +3010,34 @@
 		var resultsSummary = dojo.byId("dResultsSummary");
 			dojo.empty(resultsSummary);
 			resultsSummary.appendChild( e_exportSummary );
+	}
+	
+	function f_getGraphicsLayerExtent( graphicsLayer ){
+	
+		var graphics = graphicsLayer.graphics;
+		
+		var sExt;
+		
+		dojo.forEach( graphics, function( graphic ){
+		
+			var gExt = graphic._extent;
+			console.log("search extent", sExt);
+			
+			if( typeof( graphicsLayer.searchExtent ) == "undefined" ) {
+				graphicsLayer.searchExtent = gExt;
+			}else{
+				
+				sExt = graphicsLayer.searchExtent;
+			
+				if( sExt.xmin < gExt.xmin ) sExt.xmin = gExt.xmin;
+				if( sExt.xmax > gExt.xmax ) sExt.xmax = gExt.xmax;
+				
+				if( sExt.ymin < gExt.ymin ) sExt.ymin = gExt.ymin;
+				if( sExt.ymax > gExt.ymax ) sExt.ymax = gExt.ymax;
+			}
+		});
+		
+		console.log( "updated graphics extent", sExt )
 	}
 	
 	function f_map_graphics_clear(){
@@ -2222,11 +3081,10 @@
 		console.log(s);
 	}
 	
-	function mapInitialize( mmm ) {
+	function mapInitialize( ) {
 		
-		console.log("mmm",mmm);
-		
-		aliases = mmm.aliases;
+
+		// end pop up stuff
 		
 		//resize side content pane area
 		resize_content_pane();
@@ -2254,13 +3112,15 @@
 					ymax:747704,
 					spatialReference:{ "wkid":3424 }
 				})
+				//infoWindow: IW_meri
+				//infoTemplate: IW_meri_template
+				
 			});
-		
+			
 		navToolbar = new esri.toolbars.Navigation( M_meri );
-
-		scalebarDijit = new esri.dijit.Scalebar( {map: M_meri, scalebarUnit:"english", attachTo:"bottom-left"});
-		//scalebarDijit.show();
-
+		
+		scalebarDijit = new esri.dijit.Scalebar( {map: M_meri, scalebarUnit:"english", attachTo:"bottom-left"} );
+		
 		// cached layer imagery basemap
 		IL_basemap = new esri.layers.ArcGISImageServiceLayer( DynamicLayerHost + "/ArcGIS/rest/services/Imagery/IMG_2009_C/ImageServer");
 
@@ -2294,41 +3154,83 @@
 		M_meri.addLayer( GL_buffer_buffer );
 		M_meri.addLayer( GL_query_parcel );
 		
+		// resize the info window
+		M_meri.infoWindow.resize(440,300);
+		
 		// create the geometry service object
-		GS_parcel_selection_buffer = new esri.tasks.GeometryService(DynamicLayerHost + "/ArcGIS/rest/services/Map_Utility/Geometry/GeometryServer");
-
+		GS_parcel_selection_buffer = new esri.tasks.GeometryService( DynamicLayerHost + "/ArcGIS/rest/services/Map_Utility/Geometry/GeometryServer" );
+		
 		dojo.connect( M_meri, "onLoad", function( map ){
 			
 			console.log("Map loaded");
 			
-			f_query_parcel_init();
-			f_query_landuse_init();		
-			f_query_facility_init();
-			f_query_owners_init();	
+			f_query_parcel_init( );
+			f_query_landuse_init( );		
+			f_query_facility_init( );
+			f_query_owners_init( );	
 			
-			f_query_owner_int_init();
-			f_query_owner_parcels_init();
-			f_parcel_selection_init();
-			f_parcel_buffer_init();
+			f_query_owner_int_init( );
+			f_query_owner_parcels_init( );
+			f_parcel_selection_init( );
+			f_parcel_buffer_init( );
 			
-			f_map_identify_init();
+			f_map_identify_init( );
 			
-			overviewMapDijit = new esri.dijit.OverviewMap({map: map,visible:false});
-			overviewMapDijit.startup();
+			//overviewMapDijit = new esri.dijit.OverviewMap( { map: M_merp, visible:false } );
+			//overviewMapDijit.startup();
 			
-			measurement = new esri.dijit.Measurement({map: map}, dojo.byId('dMeasureTool'));
-			measurement.startup();
+			measurementDijit = new esri.dijit.Measurement( { map: map }, dojo.byId( 'dMeasureTool' ) );
+			
+			measurementDijit.startup();
+			
+			map.enableMapNavigation();
+						
+			// set symbols globally so they can be use for multiple feature groups
+			// esri.symbol.SimpleFillSymbol(style, outline, color)
+			// new dojo.Color([255,0,0,0.25]) R,G,B,transparency
+			S_feature_selection = new esri.symbol.SimpleFillSymbol(
+					esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+					new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_DASHDOT, new dojo.Color([255,0,0]), 2), 
+					new dojo.Color([255,255,0,0.5])
+				);
+				
+			S_feature_flash = new esri.symbol.SimpleFillSymbol(
+					esri.symbol.SimpleFillSymbol.STYLE_SOLID,
+					new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([98,194,204]), 2),
+					new dojo.Color([98,194,204,0.5])
+				);		
+			
+			S_buffer_parcel = new esri.symbol.SimpleFillSymbol(
+					esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+					new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new dojo.Color([100,100,100]), 3),
+					new dojo.Color([255,0,0,0.20])
+				);
+			
+			S_buffer_buffer = new esri.symbol.SimpleFillSymbol(
+					esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+					new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new dojo.Color([100,100,100]), 3),
+					new dojo.Color([255,0,0,0.20])
+				);
+				
+			S_buffer_selected_parcels = new esri.symbol.SimpleFillSymbol(
+					esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
+					new esri.symbol.SimpleLineSymbol("dashdot", new dojo.Color([255,0,0]), 2), 
+					new dojo.Color([255,255,0,0.25])
+				);
+				
+				
+			setTimeout(function(){loadingDialog.hide();},2000);
+			
 	
 		});
 		
-		dojo.connect(LD_base, "onLoad", function(){ f_layer_list_build( mmm.map_layers_json )});
+		dojo.connect( LD_base, "onLoad", function(){ f_layer_list_build( )});
 
 		// after the imagery layer is loaded, build the imagery list
-		dojo.connect(IL_basemap, "onLoad", function(){ f_imagery_list_build( mmm.imagery_layers_json )});
+		dojo.connect( IL_basemap, "onLoad", function(){ f_imagery_list_build( )});
 
 		dojo.connect( M_meri, "onClick", f_map_click_handler );
 		
-		// all layers have been added
 		dojo.connect( M_meri, "onLayersAddResult", function( ){ 
 		
 			console.log("All Layers have been added.");
@@ -2367,31 +3269,32 @@
 		});
 
 		dojo.connect( dojo.byId("nav_pan"), "onclick", function( ) {
-			navToolbar.activate( esri.toolbars.Navigation.PAN );
+			self.tool_selected = "select";
+			navToolbar.activate(  esri.toolbars.Navigation.PAN );
 		});
 		
 		dojo.connect( dojo.byId("nav_identify"), "onclick", function( ) {
 			navToolbar.activate( esri.toolbars.Navigation.PAN );
-			self.tool_selected="identify";
+			tool_selected="identify";
 			tabs_toggle("ResultsPane");
 		});
 
-		dojo.connect( dojo.byId("nav_btn_select"), "onclick",function( ) {
+		dojo.connect( dojo.byId("nav_btn_select"), "onclick", function( ) {
 			navToolbar.activate( esri.toolbars.Navigation.PAN );
-			self.tool_selected="select";
+			tool_selected="select";
 			tabs_toggle("ResultsPane");
 			show_visibility("dBufferTool");
 		});
 
-		dojo.connect( dojo.byId("nav_btn_erase"), "onclick", f_map_graphics_clear);
+		dojo.connect( dojo.byId("nav_btn_erase"), "onclick", f_map_graphics_clear );
 		
-		dojo.connect( dojo.byId("aBufferParcelExec"), "onclick", f_multi_parcel_buffer_exec);
+		dojo.connect( dojo.byId("aBufferParcelExec"), "onclick", f_multi_parcel_buffer_exec );
 		
 		dojo.connect(dojo.byId("nav_measure"),"onclick", function(){
 			navToolbar.deactivate();
-			self.tool_selected="measure";
+			tool_selected = "measure";
 			tabs_toggle("ResultsPane");
-			show_visibility("dMeasureWrap");
+			show_visibility( "dMeasureWrap" );
 		});
 
 		dojo.connect( dojo.byId( "LayersToggle" ), "onclick", function( ) {
@@ -2420,7 +3323,7 @@
 
 		// add event listeners to the Radio Buttons for municipality filter
 		dojo.connect( dojo.byId("rdo_muni_searchAll"), "onclick",function( ) {
-			dojo.fx.wipeOut( {node:"search_munis",duration:1000} ).play();
+			dojo.fx.wipeOut( {node:"search_munis", duration:1000} ).play();
 			dojo.query(".s_muni_chk_item").forEach( function( muni ){
 				dojo.removeAttr( dojo.byId( muni.id ), "checked");
 				muni.setAttribute( "value", "off" );
@@ -2456,45 +3359,7 @@
 			dojo.fx.wipeIn({node:"search_landuse",duration:1000}).play();
 		});
 
-
-		// after the imagery layer is loaded, build the search area
-
-		// resize map if page changes
 		
-		// set symbols globally so they can be use for multiple feature groups
-		// esri.symbol.SimpleFillSymbol(style, outline, color)
-		// new dojo.Color([255,0,0,0.25]) R,G,B,transparency
-		S_feature_selection = new esri.symbol.SimpleFillSymbol(
-				esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
-				new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_DASHDOT, new dojo.Color([255,0,0]), 2), 
-				new dojo.Color([255,255,0,0.5])
-			);
-			
-		S_feature_flash = new esri.symbol.SimpleFillSymbol(
-				esri.symbol.SimpleFillSymbol.STYLE_SOLID,
-				new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new dojo.Color([98,194,204]), 2),
-				new dojo.Color([98,194,204,0.5])
-			);		
-		
-		S_buffer_parcel = new esri.symbol.SimpleFillSymbol(
-				esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
-				new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new dojo.Color([100,100,100]), 3),
-				new dojo.Color([255,0,0,0.20])
-			);
-		
-		S_buffer_buffer = new esri.symbol.SimpleFillSymbol(
-				esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
-				new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleFillSymbol.STYLE_SOLID, new dojo.Color([100,100,100]), 3),
-				new dojo.Color([255,0,0,0.20])
-			);
-			
-		S_buffer_selected_parcels = new esri.symbol.SimpleFillSymbol(
-				esri.symbol.SimpleFillSymbol.STYLE_SOLID, 
-				new esri.symbol.SimpleLineSymbol("dashdot", new dojo.Color([255,0,0]), 2), 
-				new dojo.Color([255,255,0,0.25])
-			);
-			
-			
 		//Default tab
 		tabs_toggle("HelpPane");
 	}
@@ -2538,743 +3403,18 @@
 		});
 	}
 	
-	// initialization functions for performance
-
+	function loadContinue( ) {
 		
-
-	
-	var MERI_MunicipalMap = function ( ) {
-	
-		this.map_layers_json = this.setLayersMapJSON( );		
-		this.imagery_layers_json = this.setLayersImageryJSON( );		
-		this.aliases = a = {};
-		
-		// process all Aliases into object.. 
-		a.munCodes = this.setAliasesMunCodes( );
-		a.zoneCodes = this.setAliasesZoneCodes( );
-		a.fieldNames = this.setAliasesFieldNames( );
-		a.landUseCodes = this.setAliasesLandUses( );
-
-	};
-	
-	MERI_MunicipalMap.prototype.setAliasesFieldNames = function( ) {
-		
-		var fieldNames = [];
-		
-			fieldNames["PID"] = "PID"; 
-			fieldNames["PAMS Pin"] = "PAMS Pin"; 
-			fieldNames["OLD_BLOCK"] = "Old Block"; 
-			fieldNames["OLD_LOT"] = "Old Lot"; 
-			fieldNames["PROPERTY_ADDRESS"] = "Address"; 
-			fieldNames["TAX_ACRES"] = "Tax Acres"; 
-			fieldNames["CITY_STATE"] = "City, State";
-			fieldNames["MAP_ACRES"] = "GIS Acres";
-			fieldNames["MUN_CODE"] = "Municipality";
-			fieldNames["LANDUSE_CODE"] = "Landuse";
-			fieldNames["ZONE_CODE"] = "Zone";
-			fieldNames['NAME'] = 'Name';
-			fieldNames["ADDRESS"] = 'Address';
-			fieldNames["FIRM_PAN"] = "Firm Panel #";
-			fieldNames["TMAPNUM"] = "Tidelands Map #";
-			fieldNames["FLD_ZONE"] = "Flood Zone";
-			fieldNames["STATIC_BFE"] = "Static Base Flood Elevation";
-			fieldNames["LABEL07"] = "Wetland Label";
-			fieldNames["TYPE07"] = "Wetland Type";
-			fieldNames["LU07"] = "Anderson landuse class";
-			fieldNames["RECIEVINGWATER"] = "Receiving Water";
-			fieldNames["NAME10"] = "Voting District Label"; 
-			
-			fieldNames["FACILITY_NAME"] = "Facility Name"; 
-			fieldNames["BUILDING_LOCATION"] = "Building Location"; 
-			fieldNames["TOTALBLDG_SF"] = "Total Building Square Feet"; 
-			fieldNames["PHYSICAL_ADDRESS"] = "Address"; 
-			fieldNames["PHYSICAL_CITY"] = "City"; 
-			fieldNames["PHYSICAL_ZIP"] = "Zip Code"; 
-			fieldNames["COMPANY_CONTACT"] = "Company Contact"; 
-			fieldNames["CONTACT_PHONE"] = "Phone"; 
-			fieldNames["OFFICIAL_CONTACT"] = "Official Contact"; 
-			fieldNames["OFFICIAL_PHONE"] = "Phone"; 
-			fieldNames["EMERGENCY_CONTACT"] = "Emergency Contact"; 
-			fieldNames["EMERGENCY_PHONE"] = "Phone"; 
-			fieldNames["CAS_NUMBER"] = "CAS Number"; 
-			
-			fieldNames["LandUse_Code"] = "Landuse"; 
-			fieldNames["Zone_Code"] = "Zoning"; 
-			fieldNames["LANDUSE_CODE"] = "Landuse"; 
-			fieldNames["ZONE_CODE"] = "Zoning";
-		
-		return fieldNames;
-	}
-	
-	MERI_MunicipalMap.prototype.setAliasesZoneCodes = function( ) {
-	
-		var aliasZone = [];
-			aliasZone["AV"] = "Aviation facilities"; 
-			aliasZone["CP"] = "Commercial Park"; 
-			aliasZone["EC"] = "Environmental Conservation"; 
-			aliasZone["HI"] = "Heavy Industrial"; 
-			aliasZone["HC"] = "Highway Commercial"; 
-			aliasZone["IA"] = "Intermodal A"; 
-			aliasZone["IB"] = "Intermodal B"; 
-			aliasZone["LIA"] = "Light Industrial A"; 
-			aliasZone["LIB"] = "Light Industrial B"; 
-			aliasZone["LDR"] = "Low Density Residential"; 
-			aliasZone["NC"] = "Neighborhood Commercial"; 
-			aliasZone["PR"] = "Planned Residential"; 
-			aliasZone["PU"] = "Public Utilities"; 
-			aliasZone["RC"] = "Regional Commercial"; 
-			aliasZone["TC"] = "Transportation Center"; 
-			aliasZone["WR"] = "Waterfront Recreation"; 
-			aliasZone["RRR"] = "Roads, Rails, ROWs"; 
-			aliasZone["000"] = "Unclassified"; 
-			aliasZone["RA"] = "Redevelopment Area"; 
-			aliasZone["MZ"] = "Multiple Zones"; 
-			aliasZone["CZC-SECA"] = "Commercial Zone C - Secaucus"; 
-			aliasZone["LI1-SECA"] = "Light Industrial Zone 1 - Secaucus"; 
-			aliasZone["RZA-SECA"] = "Residential Zone A - Secaucus"; 
-			aliasZone["WAT"] = "Water"; 
-			aliasZone["LID-TET"] = "Light Industrial & Distribution Zone - Teterboro"; 
-			aliasZone["RA1-TET"] = "Redevelopment Area 1 Zone - Teterboro"; 
-			aliasZone["RA2-TET"] = "Redevelopment Area 2 Zone - Teterboro"; 
-			aliasZone["PA"] = "Parks and Recreation"; 
-			aliasZone["C-CARL"] = "Commercial Zone - Carlstadt"; 
-			aliasZone["LI-CARL"] = "Light Industrial - Carlstadt"; 
-			aliasZone["LDR-TET"] = "Low Density Residential - Teterboro"; 
-			aliasZone["MCZ-CARL"] = "Mixed Commercial Zone - Carlstadt"; 
-			aliasZone["RZ-CARL"] = "Residential Zone - Carlstadt"; 
-			aliasZone["RZB-SECA"] = "Residential Zone B - Secaucus"; 
-			aliasZone["MNF-MOON"] = "Manufacturing Zone - Moonachie"; 
-			aliasZone["R1-MOON"] = "1-Family Residential Zone - Moonachie"; 
-			aliasZone["R2-MOON"] = "2-Family Residential Zone - Moonachie"; 
-			aliasZone["B1-MOON"] = "General Business Zone - Moonachie"; 
-			aliasZone["B2-MOON"] = "Limited Business Zone - Moonachie"; 
-			aliasZone["R1-ER"] = "Low Density Residential - E Rutherford"; 
-			aliasZone["R2-ER"] = "Medium Density Residential - E Rutherford"; 
-			aliasZone["R3-ER"] = "Multi-Family Residential - E Rutherford"; 
-			aliasZone["NC-ER"] = "Neighborhood Commercial - E Rutherford"; 
-			aliasZone["RC-ER"] = "Regional Commercial - E Rutherford"; 
-			aliasZone["PCD-ER"] = "Planned Commercial Development - E Rutherford"; 
-			aliasZone["RD1-ER"] = "Redevelopment-1 - E Rutherford"; 
-			aliasZone["R1-NA"] = "1-Family Residential - N Arlington"; 
-			aliasZone["R2-NA"] = "1&2-Family Residential - N Arlington"; 
-			aliasZone["RRRA-NA"] = "Ridge Road Redevelopment Area - N Arlington"; 
-			aliasZone["PARA-NA"] = "Porete Avenue Redevelopment Area - N Arlington"; 
-			aliasZone["R3-NA"] = "Multi-Family Residential - N Arlington"; 
-			aliasZone["I1-NA"] = "Light Industrial - N Arlington"; 
-			aliasZone["C3-NA"] = "Cemetery - N Arlington"; 
-			aliasZone["P/OS-NA"] = "Parks & Open Space - N Arlington"; 
-			aliasZone["W/C-NA"] = "Waterways & Creeks - N Arlington"; 
-			aliasZone["SEA"] = "Sports and Expositions"; 
-			aliasZone["I-ER"] = "Light Industrial -  E Rutherford"; 
-			aliasZone["C2-NA"] = "Commercial 2 - N Arlington"; 
-			aliasZone["C1-NA"] = "Commercial 1 - N Arlington"; 
-			aliasZone["R1-RU"] = "Single Family Residential - Rutherford"; 
-			aliasZone["R1A-RU"] = "Single Family Residential - Rutherford"; 
-			aliasZone["R1B-RU"] = "Single Family Residential - Rutherford"; 
-			aliasZone["R2-RU"] = "Two Family Residential - Rutherford"; 
-			aliasZone["R4-RU"] = "Five Story Apartment - Rutherford"; 
-			aliasZone["B1-RU"] = "Three Story Office - Rutherford"; 
-			aliasZone["B2-RU"] = "Five Story Office - Rutherford"; 
-			aliasZone["B3-RU"] = "Three Story Office-Retail - Rutherford"; 
-			aliasZone["B3/SH-RU"] = "Business / Senior Housing - Rutherford"; 
-			aliasZone["B4-RU"] = "Business / Light Industrial - Rutherford"; 
-			aliasZone["ORD-RU"] = "Ten Story Office, Research & Distribution - Rutherford"; 
-			aliasZone["HC-RU"] = "Highway Commercial Development - Rutherford"; 
-			aliasZone["PCD-RU"] = "Planned Commercial Development - Rutherford"; 
-			aliasZone["R3-RU"] = "Three Story Apartment - Rutherford"; 
-			aliasZone["UR1A-RU"] = "University / Residential, Single Family - Rutherford"; 
-			aliasZone["C-RF"] = "Commercial - Ridgefield"; 
-			aliasZone["C/HRH-RF"] = "Commercial / High Rise Hotel - Ridgefield"; 
-			aliasZone["GA/TH C-RF"] = "GA/TH Cluster - Ridgefield"; 
-			aliasZone["LM-RF"] = "Light Manufacturing - Ridgefield"; 
-			aliasZone["NB-RF"] = "Neighborhood Business - Ridgefield"; 
-			aliasZone["O/TH-RF"] = "Office / T.H. - Ridgefield"; 
-			aliasZone["OC-RF"] = "Office Commercial - Ridgefield"; 
-			aliasZone["OMR-RF"] = "Office Mid Rise - Ridgefield"; 
-			aliasZone["OMRH-RF"] = "Office Mid Rise Hotel - Ridgefield"; 
-			aliasZone["OFR-RF"] = "One Family Residential - Ridgefield"; 
-			aliasZone["P/SP-RF"] = "Public / Semi Public - Ridgefield"; 
-			aliasZone["TH/SRCH-RF"] = "TH / SR Citizens Housing - Ridgefield"; 
-			aliasZone["T-RF"] = "Townhomes - Ridgefield"; 
-			aliasZone["TFR-RF"] = "Two Family Residential - Ridgefield"; 
-			aliasZone["RB-LF"] = "One & Two Family Residential - Little Ferry"; 
-			aliasZone["RM-LF"] = "Multifamily Residential - Little Ferry"; 
-			aliasZone["BH-LF"] = "Highway & Regional Business - Little Ferry"; 
-			aliasZone["BN-LF"] = "Neighborhood Business - Little Ferry"; 
-			aliasZone["IR-LF"] = "Restricted Industrial - Little Ferry"; 
-			aliasZone["IG-LF"] = "General Industrial - Little Ferry"; 
-			aliasZone["P-LF"] = "Public Facilities - Little Ferry"; 
-			aliasZone["RA-LF"] = "One Family Residential - Little Ferry"; 
-			aliasZone["P/SP-NA"] = "Public/Semi-Public - N Arlington"; 
-			aliasZone["A-SH"] = "Residential - South Hackensack"; 
-			aliasZone["B-SH"] = "Commercial - South Hackensack"; 
-			aliasZone["C-SH"] = "Industrial - South Hackensack"; 
-			aliasZone["M-SH"] = "Mixed - South Hackensack"; 
-			aliasZone["SCR-SH"] = "Senior Citizen Multifamily Res - South Hackensack"; 
-			aliasZone["RA-LYND"] = "One Family Residence - Lyndhurst"; 
-			aliasZone["RB-LYND"] = "One and Two Familly Residence - Lyndhurst"; 
-			aliasZone["RC-LYND"] = "Medium Density Residential - Lyndhurst"; 
-			aliasZone["B-LYND"] = "Business - Lyndhurst"; 
-			aliasZone["M1-LYND"] = "Light Industrial - Lyndhurst"; 
-			aliasZone["M2-LYND"] = "Heavy Industrial - Lyndhurst"; 
-			aliasZone["CGI-LYND"] = "Commercial-General Industrial - Lyndhurst"; 
-			aliasZone["R-1-K"] = "One Family Residential - Kearny"; 
-			aliasZone["OS-K"] = "Open Space Parks and Recreation District - Kearny"; 
-			aliasZone["SU-1-K"] = "Special Use 1 - Kearny"; 
-			aliasZone["SU-3_K"] = "Special Use 3 - Kearny"; 
-			aliasZone["SOCD-K"] = "Street Oriented Commercial District - Kearny"; 
-			aliasZone["SKI-N-K"] = "South Kearny Industrial North - Kearny"; 
-			aliasZone["SKI-S-K"] = "South Kearny Industrial South - Kearny"; 
-			aliasZone["RDP-K"] = "Research Distribution Park - Kearny"; 
-			aliasZone["RD-K"] = "Residential District - Kearny"; 
-			aliasZone["R-A-K"] = "Redevelopment Area - Kearny"; 
-			aliasZone["R-3-K"] = "Multi-Family Residential - Kearny"; 
-			aliasZone["R-2B-K"] = "One_Two Family Residential/Hospital - Kearny"; 
-			aliasZone["R-2-K"] = "One_Two Family Residential - Kearny"; 
-			aliasZone["PRD-K"] = "Planned Residential Development - Kearny"; 
-			aliasZone["MXD-K"] = "Mixed Use District - Kearny"; 
-			aliasZone["MP-K"] = "Marshland Preservation - Kearny"; 
-			aliasZone["M-K"] = "Manufacturing - Kearny"; 
-			aliasZone["LTI-K"] = "Light Industrial - Kearny"; 
-			aliasZone["LID-B-K"] = "Light Industrial Distribution B - Kearny"; 
-			aliasZone["LID-A-K"] = "Light Industrial Distribution A - Kearny"; 
-			aliasZone["LCD-K"] = "Large Scale Commercial District - Kearny"; 
-			aliasZone["H-I-K"] = "Heavy Industrial - Kearny"; 
-			aliasZone["ESCD-K"] = "Existing Shopping Center District - Kearny"; 
-			aliasZone["CEM-K"] = "Cemetery - Kearny"; 
-			aliasZone["C-4-K"] = "General Commercial - Kearny"; 
-			aliasZone["C-3-K"] = "Community Business - Kearny"; 
-			aliasZone["C-2-K"] = "Neighborhood Business - Kearny"; 
-			aliasZone["C-1-K"] = "Office - Kearny"; 
-			aliasZone["ARLD-K"] = "Adaptive Reuse Loft District - Kearny"; 
-			aliasZone["ACD-K"] = "Automobile Oriented Commercial District - Kearny"; 
-			aliasZone["LI-K"] = "   Limited Industrial- Kearny"; 
-			aliasZone["R1-NB"] = "Low Density Residential - N Bergen"; 
-			aliasZone["R2-NB"] = "Intermediate Density Residential - N Bergen"; 
-			aliasZone["R3-NB"] = "Moderate Density Residential - N Bergen"; 
-			aliasZone["C1-NB"] = "General Business - N Bergen"; 
-			aliasZone["C1A-NB"] = "General Business Limited Mixed Use - N Bergen"; 
-			aliasZone["C1B-NB"] = "General Business Limited Mixed Use Bergenline - N Bergen"; 
-			aliasZone["C1C-NB"] = "General Business Mixed Use - N Bergen"; 
-			aliasZone["C1R-NB"] = "Commercial Residential District - N Bergen"; 
-			aliasZone["C2-NB"] = "Highway Business - N Bergen"; 
-			aliasZone["I-NB"] = "Industrial - N Bergen"; 
-			aliasZone["P1-NB"] = "Riverside - N Bergen"; 
-			aliasZone["P2-NB"] = "Edgecliff - N Bergen"; 
-			aliasZone["P3-NB"] = "River Road West - N Bergen"; 
-			aliasZone["TRD-NB"] = "Tonnelle Ave Redevelopment Area - N Bergen"; 
-			aliasZone["ET-NB"] = "East Side Tonnelle Ave Zone - N Bergen"; 
-			aliasZone["GL-NB"] = "Granton Ave-Liberty Ave-69th Street Zone - N Bergen"; 
-			aliasZone["KO-NB"] = "Kennedy Overlay Zone - N Bergen"; 
-			aliasZone["TO-NB"] = "Townhouse Overlay Zone - N Bergen"; 
-		
-		return aliasZone;
-	
-	}
-	
-	MERI_MunicipalMap.prototype.setAliasesLandUses = function( ) {
-	
-		var aliasLandUse = [];
-			
-			aliasLandUse["000"] = "Unclassified";
-			aliasLandUse["AL"] = "Altered Lands";
-			aliasLandUse["CO"] = "Commercial Office";
-			aliasLandUse["CR"] = "Commercial Retail";
-			aliasLandUse["CU"] = "Communication Utility";
-			aliasLandUse["HM"] = "Hotels and Motels";
-			aliasLandUse["ICC"] = "Ind. Comm. Complex";
-			aliasLandUse["IND"] = "Industrial";
-			aliasLandUse["PQP"] = "Public Services";
-			aliasLandUse["RES"] = "Residential";
-			aliasLandUse["RL"] = "Recreational Land";
-			aliasLandUse["TRS"] = "Transportation";
-			aliasLandUse["VAC"] = "Vacant Land";
-			aliasLandUse["WAT"] = "Water";
-			aliasLandUse["WET"] = "Wetlands";
-		
-		return aliasLandUse;
-	}
-	
-	MERI_MunicipalMap.prototype.setAliasesMunCodes = function( ) {
-
-		var aliasMuniCode = [];
-		
-			aliasMuniCode["205"] = "Carlstadt";
-			aliasMuniCode["212"] = "East Rutherford";
-			aliasMuniCode["230"] = "Little Ferry";
-			aliasMuniCode["232"] = "Lyndhurst";
-			aliasMuniCode["237"] = "Moonachie";
-			aliasMuniCode["239"] = "North Arlington";
-			aliasMuniCode["249"] = "Ridgefield";
-			aliasMuniCode["256"] = "Rutherford";
-			aliasMuniCode["259"] = "South Hackensack";
-			aliasMuniCode["262"] = "Teterboro";
-			aliasMuniCode["906"] = "Jersey City";
-			aliasMuniCode["907"] = "Kearny";
-			aliasMuniCode["908"] = "North bergen";
-			aliasMuniCode["909"] = "Secaucus";
-		
-		return aliasMuniCode;
-	}
-	
-	MERI_MunicipalMap.prototype.setLayersImageryJSON = function( ) {
-	
-		return [
-			{"id":"IMG_1930_BW","title": "1930 Black and White (NJDEP)", "desc": "1930 Black and White Imagery from the NJDEP"},
-			{"id":"IMG_1958_BW","title": "1958 Black and White (NJDEP)", "desc": "1958 Black and White Imagery from the NJDEP"},
-			{"id":"IMG_1969_BW","title": "1969 Black and White (NJMC)", "desc": "1969 Black and White Imagery from the NJMC"},
-			{"id":"IMG_1978_BW","title": "1978 Black and White (NJMC)", "desc": "1978 Black and White Imagery from the NJMC"},
-			{"id":"IMG_1985_BW","title": "1985 Black and White (NJMC)", "desc": "1985 Black and White Imagery from the NJDEP"},
-			{"id":"IMG_1992_BW","title": "1992 Black and White (NJMC)", "desc": "1992 Black and White Imagery from the NJMC"},
-			{"id":"IMG_1995-97_CIR","title": "1995-97 Color Infrared (NJDEP)", "desc": "1995-1997 Color Infrared Imagery from the NJDEP"},
-			{"id":"IMG_2001_C","title":"2001 Color (NJMC)","desc":"2001 True Color Imagery from GEOD"},
-			{"id":"IMG_2002_BW","title": "2002 Black and White (NJMC)", "desc": "2002 Black and White from the NJMC"},
-			{"id":"IMG_2002_C","title": "2002 Color Infrared (NJDEP)", "desc": "2002 Color Infrared Imagery from the NJDEP"},
-			{"id":"IMG_2008_C","title": "2008 Color (NJDEP)", "desc": "2008 True Color Imagery from the NJDEP"},
-			{"id":"IMG_2009_C","title": "2009 Color (NJMC)", "desc": "2009 True Color Imagery from the NJMC"},
-			{"id":"IMG_2010_C","title": "2010 Color (Hudson County)", "desc": "2010 True Color Imagery from Hudson County. This imagery only covers the Hudson County portion of the NJMC District"}
-		];
-	
-	}
-	
-	MERI_MunicipalMap.prototype.setLayersMapJSON = function( ) {
-		return [		
-			{	
-				"name":"Environmental",
-				"id":"environ",
-				"layers":[	
-					{"id":"14","name":"FEMA Panel","vis":1,"ident":1,"desc":"FEMA Panel"},
-					{"id":"25","name":"Riparian Claim (NJDEP)","vis":0,"ident":1,"desc":"Riparian Claim (NJDEP)"},
-					{"id":"27","name":"FEMA (100-YR FLOOD)","vis":0,"ident":1,"desc":"FEMA (100-YR FLOOD)"},
-					{"id":"28","name":"Wetlands (DEP)","vis":0,"ident":1,"desc":"Wetlands (DEP)"}
-				]
-			}
-			,
-			{
-				"name":"Hydro",
-				"id":"hydro",
-				"layers":[	
-					{"id":1,"name":"Tidegates","vis":1,"ident":1,"desc":"Tidegates"},
-					{"id":2,"name":"Creek Names","vis":1,"ident":0,"desc":"Creek Names"},
-					{"id":13,"name":"Drainage","vis":1,"ident":1,"desc":"Drainage"},
-					{"id":23,"name":"Hydro Lines - Wetland Edge","vis":1,"ident":1,"desc":"Hydro Lines - Wetland Edge"},
-					{"id":24,"name":"Waterways","vis":0,"ident":0,"desc":"Waterways"}
-				]
-			},
-			{"name":"Infrastructure/ Utilities","id":"inf_util","layers":[	
-				{"id":5,"name":"Stormwater Catchbasins","vis":0,"ident":1,"desc":"Stormwater Catchbasins"},
-				{"id":6,"name":"Stormwater Manholes","vis":0,"ident":1,"desc":"Stormwater Manholes"},
-				{"id":7,"name":"Stormwater Outfalls","vis":0,"ident":1,"desc":"Stormwater Outfalls"},
-				{"id":8,"name":"Stormwater Lines","vis":0,"ident":1,"desc":"Stormwater Lines"},
-				{"id":9,"name":"Sanitary Manhole","vis":0,"ident":1,"desc":"Sanitary Manhole"},
-				{"id":10,"name":"Sanitary Lines","vis":0,"ident":1,"desc":"Sanitary Lines"},
-				{"id":11,"name":"Hydrants","vis":1,"ident":1,"desc":"Hydrants"}]},
-			{"name":"Political / Jurisdiction","id":"planning_cad","layers":[	
-				{"id":3,"name":"NJMC District","vis":1,"ident":0,"desc":"NJMC District"},
-				{"id":4,"name":"Municipal Boundaries","vis":1,"ident":0,"desc":"Municipal Boundaries"},
-				{"id":20,"name":"Block Limit","vis":1,"ident":0,"desc":"Block Limit"},
-				{"id":21,"name":"Parcel Lines","vis":1,"ident":0,"desc":"Parcel Lines"},
-				{"id":26,"name":"Buildings","vis":1,"ident":1,"desc":"Buildings"},
-				{"id":31,"name":"Land Use","vis":0,"ident":1,"desc":"Land Use"},
-				{"id":32,"name":"Zoning","vis":0,"ident":1,"desc":"Zoning"},
-				{"id":22,"name":"Encumbrance/Easements","vis":0,"ident":1,"desc":"Encumbrance/Easements"},
-				{"id":30,"name":"Census Blocks 2010","vis":0,"ident":0,"desc":"Census Blocks 2010"},
-				{"id":29,"name":"Voting Districts 2010","vis":0,"ident":1,"desc":"Voting Districts 2010"}]},
-			{"name":"Topographic & Planimetrics","id":"topo_plan","layers":[	
-				{"id":0,"name":"Spot Elevations","vis":0,"ident":1,"desc":"Spot Elevations"},
-				{"id":15,"name":"Fence Lines","vis":0,"ident":1,"desc":"Fence Lines"},
-				{"id":16,"name":"Contour Lines","vis":0,"ident":1,"desc":"Contour Lines"}]},
-			{"name":"Transportation","id":"trans","layers":[	
-				{"id":12,"name":"DOT Roads","vis":1,"ident":1,"desc":"DOT Roads"},
-				{"id":19,"name":"Bridges - Overpass","vis":1,"ident":0,"desc":"Bridges - Overpass"},
-				{"id":17,"name":"Rails","vis":1,"ident":1,"desc":"Rails"},
-				{"id":18,"name":"Roads ROW","vis":1,"ident":1,"desc":"Roads ROW"}]}
-		];
-	}
-	
-	MERI_MunicipalMap.prototype.loadDependencies = function( ) {
-		
-		var self = this;
-		
-		this.dependencies = {
-			"landuse":{
-				"isLoaded":false
-			},
-			"legend":{
-				"isLoaded":false
-			}
-		};
-		
-		// require all necessary dojo and dijit libs
-
-		// request layer defs.. wait for all to load before continuing
-		
-		// request landuse and build object.
-		dojo.xhrGet({
-			// request the url for the LandUse Layer definition, including all domains
-			url: "http://webmaps.njmeadowlands.gov/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/3?f=json",
-			handleAs: "json",
-			load: function(json) {
-				//alert("The message is: " + result);
-				console.log("json response:", json);
-				for( field in json.fields ){
-					if( json.fields[field].name == "LANDUSE_CODE"){
-						landuse_json = json.fields[field].domain.codedValues;
-					}
-				}
-				// now that data is loaded
-				self.dependencies["landuse"].isLoaded = true;
-				self.loadContinue( );
-			},
-			error: function() {
-				// in case of error fail to these values - 061312
-				landuse_json = [
-					{"code":"CO","name":"Commercial Office"},
-					{"code":"CR","name":"Commercial Retail"},
-					{"code":"HM","name":"Hotels and Motels"},
-					{"code":"IND","name":"Industrial"},
-					{"code":"ICC","name":"Industrial Commercial Complex"},
-					{"code":"PQP","name":"Public/Quasi Public Services"},
-					{"code":"RL","name":"Recreational Land"},
-					{"code":"RES","name":"Residential"},
-					{"code":"TRS","name":"Transportation"},
-					{"code":"WAT","name":"Water"},
-					{"code":"WET","name":"Wetlands"},
-					{"code":"000","name":"Unclassified"},
-					{"code":"CU","name":"Communication Utility"},
-					{"code":"MU","name":"Multiple Uses"},
-					{"code":"VAC","name":"Open Lands"},
-					{"code":"TL","name":"Transitional Lands"}
-				];
-				
-				self.dependencies["landuse"].isLoaded = true;
-				self.loadContinue( );
-				
-				//f_search_landuse_build();
-				
-			}
-		});
-		
-		// request legend from MunicipalMap_live service and set object.
-		dojo.xhrGet({
-			// The URL of the request
-			url: DynamicLayerHost + "/ArcGIS/rest/services/Municipal/MunicipalMap_live/MapServer/legend?f=json",
-			// The success callback with result from server
-			handleAs:"json",
-			handle: function( content ) {
-				console.log( "map_legend", content);
-				map_legend = content;
-				self.dependencies["legend"].isLoaded = true;
-				self.loadContinue( );
-			}			
-		});	
-	};
-	
-	MERI_MunicipalMap.prototype.loadContinue = function( ) {
-	
-		var merimap = this, d = merimap.dependencies;
-
 		// test if all layers have loaded
-		if( d["landuse"].isLoaded && d["legend"].isLoaded ){
+		if( dependencies["landuse"].isLoaded && dependencies["legend"].isLoaded ){
 			
 			//initialize map, pass meri map obj
-			mapInitialize( merimap );
+			mapInitialize( );
 		}
 	}
 	
-	/*
-	dojo.addOnLoad( f_query_parcel_init() 			);
-    dojo.addOnLoad( f_query_landuse_init() 			);
-    dojo.addOnLoad( f_query_facility_init()			 );
-    dojo.addOnLoad( f_query_owners_init()			 );
-
-	dojo.addOnLoad( f_query_owner_int_init()		 );
-	dojo.addOnLoad( f_query_owner_parcels_init()	 );
-	dojo.addOnLoad( f_parcel_selection_init()		 );
-	dojo.addOnLoad( f_parcel_buffer_init()			 );
-
-	dojo.addOnLoad( f_map_identify_init()			 );
-	*/
-	
-	//on window rezie adjust the map view
-	dojo.addOnLoad(function() {
-	   dojo.connect( window, "onresize", resize_content_pane );
-	});
-	
-	// initial MERI Municipal Map Object after all scripts have loaded
-	var mmm = new MERI_MunicipalMap();
-	
-	// load dependencies and trigger mapInitialize when complete
-		mmm.loadDependencies();
 		
-		 
-			
 		
 </script>
-</head>
-
-<body class="claro">
-
-<div id="wrapper">
-    <div id="framecontent">
-        <div class="innertube">
-		<div id="toolbar">
-			<div id="navToolbar" >
-				<div class="tool_button" id="nav_zoom_in" 		title="Zoom In"					iconClass="zoominIcon" 		></div>
-				<div class="tool_button" id="nav_zoom_out" 		title="Zoom Out"				iconClass="zoomoutIcon" 	></div>
-				<div class="tool_button" id="nav_zoom_fullext" 	title="Zoom Full Extent"		iconClass="zoomfullextIcon" ></div>
-				<div class="tool_button" id="nav_zoom_prev" 	title="Zoom Previous Extent" 	iconClass="zoomprevIcon"	></div>
-				<div class="tool_button" id="nav_zoom_next" 	title="Zoom Next Extent"		iconClass="zoomnextIcon" 	></div>
-				<div class="tool_button" id="nav_pan" 			title="Pan Map"					iconClass="panIcon" 		></div>
-				<div class="tool_button" id="nav_identify" 		title="Identify"				 							></div>
-
-				<div class="tool_button" id="nav_btn_select" 	title="Parcel Select"										></div>
-				<div class="tool_button" id="nav_measure"		title="Measure"		 									    ></div>
-				<div class="tool_button" id="nav_btn_erase"		title="Clear Map"											></div>
-                	
-                
-			</div>
-		</div>
-        
-        <div id="tabs">
-        	<ul id="tablist">
-            	<li id="LayersToggle"><a href="#">Table of Contents</a></li>
-                <li id="SearchTab"><a href="#">Search</a></li>
-                <li id="ResultsTab"><a href="#">Results</a></li>
-                <li id="HelpTab"><a href="#">About</a></li>
-            </ul>
-        </div>
-
-		<div id="side_content">
-			<div id="left_content">
-            
-				<div id="ResultsPane">
-					
-					<div id="dMeasureWrap" class="ctrl_wipe">
-						<div id="dMeasureTool" ></div>
-					</div>
-
-					<div id="dBufferTool" class="ctrl_wipe">
-						<div class="tocDivTitle">Buffer Selected Parcels</div>
-							<div>Buffer Distance (feet): <input type="text" id="bufferToolDistance" value="200"  /></div>
-							<div><a id="aBufferParcelExec" href="#" title="Execute Buffer tool on selected parcels with the given distance." >Execute Buffer</a></div>
-							
-							<div style="display:none">
-							<div>Buffer Layer Visibilties</div>
-							<div>
-								<input id="chkBufferParcel" type="checkbox" checked="checked">Parcel to Buffer<br />
-								<input type="checkbox" checked="checked">Parcel to Buffer<br />
-							</div>
-						</div>
-					</div>
-					
-					<div id="ResultsPaneTitle"></div>
-					<div id="dResultsSummary"></div>
-                    
-                    <!-- ERIS OUTPUT --><div id="Links_ERIS"></div><div id="Results_ERIS"></div>
-					
-					<div id="r_map_selection" class="ctrl_wipe"></div>
-					<div id="r_map_buffer" class="ctrl_wipe"></div>
-					
-					<div id="dIdentifyResults" class="ctrl_wipe"></div>
-					<div id="dSearchResults" class="ctrl_wipe"></div>
-									
-				</div><!-- ResultsPane-->
-				<div id="treeToc"></div>
-				<div id="SearchPane">
-					<div id="search_menu"><strong>Search: </strong>
-						<a href="#" onclick="f_search_handler('search_PROP');">Property</a>
-						<!-- <a href="#" onclick="f_search_handler("search_FAC");">Facility</a> -->
-						<a href="#" onclick="f_search_handler('search_OWNR');">Owner</a>
-					</div>
-					<div id="search_ALL" style="display:block">
-						<h3>Search Options</h3>
-						<div class="searchAdvancedDiv">
-						<input type="radio" name="rdo_muni_search" id="rdo_muni_searchAll" selected="selected" />
-							<label for="rdo_muni_searchAll">All Municipalities</label>
-							<input type="radio" name="rdo_muni_search" id="rdo_muni_searchSelect">
-							<label for="rdo_muni_searchSelect">Selected Municipalities</label>
-							<div id="search_munis" style="display:none"></div>
-						</div>
-						<div class="searchAdvancedDiv">
-							<input type="radio" name="rdo_qual_search" id="rdo_qual_searchAll" selected="selected" />
-							<label for="rdo_qual_searchAll">All Parcels</label>
-							<input type="radio" name="rdo_qual_search" id="rdo_qual_searchSelect">
-							<label for="rdo_qual_searchSelect">Designated Parcels</label>
-							<div id="search_qual" style="display:none"></div>
-						</div>
-						<div class="searchAdvancedDiv">
-							<input type="radio" name="rdo_landuse_search" id="rdo_landuse_searchAll" selected="selected" />
-							<label for="rdo_landuse_searchAll">All Land Uses</label>
-							<input type="radio" name="rdo_landuse_search" id="rdo_landuse_searchSelect">
-							<label for="rdo_landuse_searchSelect">Selected Land Uses</label>
-							<div id="search_landuse" style="display:none"></div>
-							<div id="r_search_landuse" style="display:none"></div>
-
-						</div>
-						<div class="searchAdvancedDiv">
-							<div>Acreage:
-								<label for="txtAcreageMin">Min:</label><input type="text" id="txtAcreageMin" style="width:40px;" title="Min Acreage" value=""  class="search_field" name="AcrMin" /> &nbsp;&nbsp;
-								<label for="txtAcreageMax">Max:</label><input type="text" id="txtAcreageMax" style="width:40px;" title="Max Acreage" value="" class="search_field" name="AcrMax" />
-							</div>
-						</div>
-					</div>
-
-					<div id="search_PROP" style="display:block">
-						<h3>Search Parcels</h3>
-						<div class="searchParcelSection">
-							<!-- A D D R E S S -->
-							<div title="Search by Property Address" class="search_field" name="Address">
-								<label for="txtQueryAddress">Address:</label><input type="text" id="txtQueryAddress"  />
-							</div>
-						</div>
-						<div class="searchParcelSection">
-							<!-- B L O C K   L O T  -->
-							<div title="Search parcel Block"><label for="txtQueryBlock">Block:</label><input type="text" class="search_field"  id="txtQueryBlock" value="" name="Block" /></div>
-							<div title="Search parcel Lot"><label for="txtQueryLot">Lot:</label><input type="text" class="search_field" id="txtQueryLot"  value="" name="Lot" /></div>
-							<div title="">
-								<input type="checkbox" name="OldBL" value="true" id="b_searchOldBlockLot" checked="checked" /> <label for="b_searchOldBlockLot">Search historical blocks and lots?</label>
-							</div>
-							<div title="Uncheck this box if you would like to do a "wildcard" search. See Help for more details.">
-								<input type="checkbox" name="BlockLotExact" value="true" id="b_searchBlockLotExact" checked="checked" /> <label for="b_searchBlockLotExact">Find only exact matches?</label>
-							</div>
-						</div>
-						<div>
-							<input type="button" class="i_search_button" value="Search for Properties" id="i_btn_search_parcels"/>
-						</div>
-						<!--<div id="r_search_parcel" class="search_results"></div>-->
-					</div>
-                    <div id="search_OWNR">
-						<h3>Owner Search</h3>
-						<label>Owner Name:</label>
-						<input type="text" id="txtQueryOwner" title="Owner Search" value="hartz mountain" />
-						<!--<input type="text" class="search_field"name="Owner" /><br /><br />-->
-						<input type="button" class="i_search_button" value="Search Owners" onclick="f_query_owners_exec()" />
-                    	<div id="r_search_owner" class="search_results"></div>
-                    </div><!-- search_OWNR -->
-                    <div id="search_LND">
-                    	<h3>Landuse</h3>
-							<!-- old spot for landuse -->
-							<input type="button" class="i_search_button" value="Search Landuse" onclick="f_query_landuse_exec()" />
-						</div>
-					</div><!-- search_LND -->
-					<div id="search_FAC">
-						<h3>Facility Search</h3>
-						<label>Facility Name:</label><input type="text" id="txtQueryFacility" title="Facility Name Search" class="search_field" name="Facility" /><br /><br />
-						<input type="button" class="i_search_button" value="Search Facilities" onclick="f_query_facility_exec()" />
-						<div id="r_search_facility" class="search_results"></div>
-					</div>
-                    
-				</div> <!-- Search -->
-				<div id="MapLayers" >
-					<div id="map_images">
-						<div class="toc_heading">Basemap Imagery</div>
-					</div>
-					<div id="map_layers">
-						<div class="toc_heading">Map Layers</div>
-						<div id="map_layer_groups"></div>
-					</div>
-				</div>
-				<div id="HelpPane" style="display: block;">
-                <h2 class="sectionTitle">About</h2>
-                
-                <div class="sidebarContainer">
-                	This version of NJMC’s Municipal Map encompasses 8 years of data collected about its 14-constituent towns, including historical to present geographic information. Municipalities can gain access to these layers and records about properties that falls within their respective municipalities and identify pertinent information about each property in question. The layers include: parcels, land use, zoning, wetlands, riparian, encumbrance, FEMA and much more. In addition, MERI-GIS has been compiling utility data from stormwater manholes to sanitary lines so towns can visualize and further make decision on existing infrastructure and conditions. Imagery accessible on this application ranges from the 1930’s to 2010. New data will become available once they are complete. Visit MERI’s webmaps periodically for timely updates. 
-                </div>
-                <hr>
-                
-                                
-                <h2 class="sectionTitle">Disclaimer</h2>
-                
-                <div class="sidebarContainer">
-                   	The information contained in this site is the best available according to the procedures and standards of the New Jersey Meadowlands Commission (NJMC)/Meadowlands Environmental Research Institute Geographic Information Systems group (MERI-GIS)<a id="disclaimerMoreLink" onclick="toggle_visibility('disclaimerMore'); toggle_visibility('disclaimerMoreLink');" target="_blank" title="read more" style="display:block;">...</a>
-                    
-                    <div id="disclaimerMore" style="display:none;">
-                    In order to maintain the quality and timeliness of the data, MERI-GIS regularly maintains the information in their databases and GIS layers. However, unintentional inaccuracies may occur. MERI-GIS has made every effort to present the information in a clear and understandable way for a variety of users. However, we cannot be responsible for the misuse or misinterpretation of the information presented by this system. Therefore, under no circumstances shall the NJMC/MERI-GIS be liable for any actions taken or omissions made from reliance on any information contained herein from whatever source nor shall the NJMC/MERI-GIS be liable for any other consequences from any such reliance.<br /><br />
-
-All data request shall be made directly to the GIS Department. Processing fees may apply and NJMC’s data distribution agreement is required on all requests. The GIS Department can be contacted at <a href="mailto:merigis@njmeadowlands.gov">merigis@njmeadowlands.gov</a>.<br />
-
-<div style="text-align:right;"><a onclick="toggle_visibility('disclaimerMore'); toggle_visibility('disclaimerMoreLink');"><img src="http://webmaps.njmeadowlands.gov/imagery/images/icons_BK/more_arrow_up.png" title="collapse" /></a></div>
-
-                    
-                    </div>
-                    
-                </div>
-                <hr>
-                <!-- -->
-                <h2 class="sectionTitle" >Help</h2>
-                
-                <div class="sidebarContainer" >
-                   	Need help using this application?<br /><br />
-
-					A full guide covering everything from the basics all the way up to advanced features is provided <a href="help/" target="_blank">here</a>.
-                </div>
-                <hr >
-                
-                <!-- -->
-                <h2 class="sectionTitle">ERIS</h2>
-                
-                <div class="sidebarContainer">
-                                <div id="signInForm">
-                <form id="signInFormNode">
-        
-                    <label class="eris_login_lbl">Username: </label><input type="text" name="userName" class="eris_login_fld" /><br />
-                    <label class="eris_login_lbl">Password: </label><input type="password" name="password" class="eris_login_fld" />
-        
-                </form>
-                    <button id="ERISLogin" onClick="ERISLogin();">Login</button>
-                </div>
-                
-                <pre id="signInResultNode"></pre>
-				                
-                
-                   	
-                    
-                    
-                </div>
-                <hr>
-                
-                
-                <!-- -->
-                <h2 class="sectionTitle">METADATA</h2>
-                
-                <div class="sidebarContainer">
-                   	Need the Metadata?<br /><br />
-
-					A complete listing of all the GIS data is provided <a href="http://apps.njmeadowlands.gov/mapping/metadata/?c=municipal" target="_blank">here</a>.
-                </div>
-                <hr>
-                
-                <!-- -->                
-                <h2 class="sectionTitle">Contact</h2>
-                
-                <div class="sidebarContainer">
-                   	We appreciate your feedback, please let us know what you think about the application using this <a href="http://apps.njmeadowlands.gov/feedback/?i=f&a=1" target="_blank">form.</a>
-                    <br />
-					<br />
-
-                    You can also contact the MERI GIS Department at 201-460-4612
-                </div>
-
-                
-                </div>
-			</div><!-- left_content -->
-		</div><!-- side_content -->
-
-		<div id="footer"> &copy 2011 New Jersey Meadowlands Commission
-			<div id="colapse"> <img src="images/icons_bk/left_arr16_2.png" onclick="coll_mnu();" alt="Collapse Menu" title="Collapse Menu" /></div>
-		</div>
-        
-	</div><!-- innertube -->
-	</div><!-- framecontent -->
-	<div id="expand" >
-		<div id="expand_bttn">
-			<img src="images/arr_right.png" onclick="expnd_mnu();" alt="Expand Menu" title="Expand Menu" />
-		</div>
-	</div>
-	<div id="map"></div>
-
-
-</div><!-- wrapper -->
 </body>
 </html>

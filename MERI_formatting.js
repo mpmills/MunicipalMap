@@ -15,13 +15,12 @@
 //FIELD NAME ALIASES
 	function fieldAlias( fieldName, dataSource ){
 	
-	
 		dataSource = typeof(dataSource) != 'undefined' ? dataSource : '';
 
 		aliases.fieldNames['NAME'] = dataSource + ' Name';
 		aliases.fieldNames["ADDRESS"] = dataSource + ' Address';		
 		
-		if( fieldName in aliases.fieldNames ){
+		if( typeof( aliases.fieldNames[ fieldName ] ) != "undefined" ){
 			return( aliases.fieldNames[ fieldName ] );
 		}else{
 			return( toProperCase( fieldName ));
@@ -31,7 +30,7 @@
 // lANDUSE CLEANUP
 function landuseAlias( a ){
 	
-		if( a in aliases.landUseCodes){
+		if( typeof( aliases.landUseCodes[ a ]) != "undefined"){
 			return( aliases.landUseCodes[ a ]);
 		}else{
 			return( toProperCase( a ));
@@ -40,7 +39,7 @@ function landuseAlias( a ){
 // ZONING CLEANUP
 function zoningAlias( a ){
 
-		if( a in aliases.zoneCodes ){
+		if( typeof(aliases.zoneCodes[a] ) != "undefined" ){
 			return( aliases.zoneCodes[a] );
 		}else{
 			return( toProperCase(a) );
@@ -52,7 +51,7 @@ function muncodeToName( c ){
 	if( c.length == 4){
 		c = c.substr(1,3);
 	}
-	if( c in aliases.munCodes ){
+	if( typeof( aliases.munCodes[ c ] ) != "undefined" ){
 		return( aliases.munCodes[ c ] );
 	}else{
 		return( toProperCase(c) );
