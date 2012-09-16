@@ -1,10 +1,19 @@
+<!DOCTYPE html>
 <html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+    <meta name="viewport" content="initial-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no"/>
+    <!-- meta tags to hide url and minimize status bar to give the web app
+    a native app look this only happens after app is saved to the desktop-->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="translucent-black"
+    />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
 <title>New Jersey Meadowlands Commission &raquo; Municipal Map</title>
 
 <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/dojo/dijit/themes/claro/claro.css">
-<link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.1/js/esri/dijit/css/Popup.css">
 
 <link rel="stylesheet" type="text/css" href="map.css" />
 
@@ -32,8 +41,7 @@
 				<div class="tool_button" id="nav_btn_select" 	title="Parcel Select"										></div>
 				<div class="tool_button" id="nav_measure"		title="Measure"		 									    ></div>
 				<div class="tool_button" id="nav_btn_erase"		title="Clear Map"											></div>
-                	
-                
+               
 			</div>
 		</div>
         
@@ -618,20 +626,29 @@ var aliases = {
 		
 		function(  ){
 		
+			// set proxy options and path
+			esri.config.defaults.io.alwaysUseProxy = false;
+			esri.config.defaults.io.proxyUrl = DynamicLayerHost + "/proxy/proxy.ashx";
+		
+		
+			// set the default geometry service
+			esri.config.defaults.geometryService = new esri.tasks.GeometryService(DynamicLayerHost + "/ArcGIS/rest/services/Map_Utility/Geometry/GeometryServer");
+			
 			console.log("Dom Ready.....");
 			
 			loadingDialog = new dojo.dijit.Dialog({
 				title: "Municipal Map",
 				content: "<div style=\"text-align:center;margin-top:30px;margin-bottom:30px;\">"+
 							"<h2>Welcome to MERI's Municipal Map</h2>"+
-							"<div style=\"margin:20px 0 20px 0;\"><img src=\"map_loading_40.gif\" ></div>"+
+							//"<div style=\"margin:20px 0 20px 0;\"><img src=\"map_loading_40.gif\" ></div>"+
+							"<div style=\"margin:20px 0 20px 0;\"><img src=\"meri_globe.gif\" ></div>"+
 							"<h3 style=\"padding:0 40px 0 40px;\">Please be patient while the web application is prepared.</h3>"+
 						 "</div>",
 						 
 				style: "width: 360px;height:"
 			});
 			
-			loadingDialog.show();
+			
 	
 			// request landuse and build object.
 			dojo.xhrGet({
@@ -693,6 +710,8 @@ var aliases = {
 				}			
 			});	
 
+			loadingDialog.show();
+			
 			dojo.connect( window, "onresize", resize_content_pane );			
 
 //
@@ -704,7 +723,8 @@ var aliases = {
 	var mmm, M_meri, basemap_dynamic, navToolbar, tool_selected,
 		LD_base, LD_visible = [],
 		LD_flooding, LD_flood_visible =[],
-		ERIS_base;
+		ERIS_base,
+		njmcExtent;
 		
 	// ALL Local Variables converted to MapObject
 	
@@ -959,9 +979,7 @@ var aliases = {
 	var search_LandUseIDs = [];
 	var GV_current_ownerid;
 	var GV_searchtool_current;
-	
-	
-	
+
 	//var DynamicLayerHost = "http://"+ location.hostname;
 	var DynamicLayerHost = "http://webmaps.njmeadowlands.gov";
 
@@ -1302,11 +1320,10 @@ var aliases = {
 			case "buffer": f_parcel_buffer_exec( evt_click ); break;
 			case "identify": f_map_identify_exec( evt_click ); break;
 			case "measure":break;
-			case "pan":break;
+			case "pan": console.log("map mode is pan"); break;
 		}
 	}
 
-	
 	function f_map_identify_init( ){
 	
 		IT_Map_All = new esri.tasks.IdentifyTask( DynamicLayerHost + "/ArcGIS/rest/services/Municipal/MunicipalMap_live/MapServer" );
@@ -2549,8 +2566,8 @@ var aliases = {
 /////////////////
 
 	function zoomToCustomFullExtent()	{
-		var CustomFullExtent = new esri.geometry.Extent( 582057.758333342, 659902.81542969, 636285.741666661, 747578.709309896, new esri.SpatialReference( { "wkid":3424 } ));
-		M_meri.setExtent(CustomFullExtent);
+		//var CustomFullExtent = new esri.geometry.Extent( 582057.758333342, 659902.81542969, 636285.741666661, 747578.709309896, new esri.SpatialReference( { "wkid":3424 } ));
+		M_meri.setExtent(njmcExtent);
 	}
 
 	function commaListFromArray(ary){
@@ -2807,11 +2824,8 @@ var aliases = {
 	function coll_mnu(){
 		hide_visibility("framecontent");
 
-		var map2 = dojo.byId("map");
-		map2.style.left = "20px";
-
-		//var map_root = dojo.byId("map_root");
-		//map_root.style.width = (document.width - 20) + "px";
+		// set map style left 20px
+		dojo.style( dojo.byId("map"), "left", "20px" );
 
 		show_visibility("expand");
 
@@ -2823,19 +2837,11 @@ var aliases = {
 	// BK MENU Stuff 
 	function expnd_mnu(){
 	
-		show_visibility("framecontent");
+		show_visibility( "framecontent" );
 
-		//var map2 = dojo.byId("map");
-		//map2.style.left = "320px";
+		dojo.style(dojo.byId("map"),"left", "320px");
 
-		dojo.byId("map").style.left = "320px";
-
-		// this element did not exist in the DOM. it was commented out since it was not doing anything
-
-		//var map_root = document.getElementById("map_root");
-		//map_root.style.width = (document.width - 320) + "px";
-
-		hide_visibility("expand");
+		hide_visibility( "expand" );
 
 		// resize and reposition map
 		M_meri.resize();
@@ -2846,6 +2852,8 @@ var aliases = {
 		console.log("ERROR", error, error.toString() );
 	}
 	
+	
+	// PARCEL SELECTION RESULTS
 	function f_result_detail( type, target_el, pid, oid ){
 	
 		// type = parcel
@@ -2982,7 +2990,7 @@ var aliases = {
 	
 	function f_summarize_totals( graphics, clickType ){
 		
-		console.log("Click Type:",clickType);
+		console.log("Click Type:",clickType, "graphics", graphics );
 		
 		var totalAcres = 0,
 			field = "MAP_ACRES",
@@ -3003,41 +3011,18 @@ var aliases = {
 			e_export.setAttribute( "href", "http://webmaps.njmeadowlands.gov/municipal/export_parcel_owners.php?excel=1&layers=Owner&pids=" + str_pid_list.substring( 0, str_pid_list.length - 1 ));
 			e_export.setAttribute( "style", "padding-top:6px;display:block");
 			
+		//var e_zoomToExtent = dojo.doc.createElement("div");
+		//	e_zoomToExtent.innerHTML = "Zoom to Result Extent";
+		//	e_zoomToExtent.setAttribute("onclick", function( graphics ){ f_zoomToGraphicsExtent( gs );} );
+			
 		var e_exportSummary = dojo.doc.createElement("div");
 			e_exportSummary.appendChild( e_summary );
 			e_exportSummary.appendChild( e_export );
+			//e_exportSummary.appendChild( e_zoomToExtent );
 		
 		var resultsSummary = dojo.byId("dResultsSummary");
 			dojo.empty(resultsSummary);
 			resultsSummary.appendChild( e_exportSummary );
-	}
-	
-	function f_getGraphicsLayerExtent( graphicsLayer ){
-	
-		var graphics = graphicsLayer.graphics;
-		
-		var sExt;
-		
-		dojo.forEach( graphics, function( graphic ){
-		
-			var gExt = graphic._extent;
-			console.log("search extent", sExt);
-			
-			if( typeof( graphicsLayer.searchExtent ) == "undefined" ) {
-				graphicsLayer.searchExtent = gExt;
-			}else{
-				
-				sExt = graphicsLayer.searchExtent;
-			
-				if( sExt.xmin < gExt.xmin ) sExt.xmin = gExt.xmin;
-				if( sExt.xmax > gExt.xmax ) sExt.xmax = gExt.xmax;
-				
-				if( sExt.ymin < gExt.ymin ) sExt.ymin = gExt.ymin;
-				if( sExt.ymax > gExt.ymax ) sExt.ymax = gExt.ymax;
-			}
-		});
-		
-		console.log( "updated graphics extent", sExt )
 	}
 	
 	function f_map_graphics_clear(){
@@ -3069,55 +3054,42 @@ var aliases = {
 		dojo.byId("dSearchResults").innerHTML = "";
 		dojo.byId("Results_ERIS").innerHTML = "";
 		dojo.byId("Links_ERIS").innerHTML = "";
-	}
+	}	
 	
-	function m_maptool_extent(extent) {
-
-		var s =  "xmin:"+ extent.xmin + ","
-			+"ymin: " + extent.ymin + ","
-			+"xmax: " + extent.xmax + ","
-			+"ymax: " + extent.ymax;
-
-		console.log(s);
+	
+	function f_zoomToGraphicsExtent( gs ){
+	
+		M_meri.setExtent( esri.graphicsExtent( gs ));
+		
 	}
 	
 	function mapInitialize( ) {
-		
-
-		// end pop up stuff
-		
+				
 		//resize side content pane area
 		resize_content_pane();
-
-		// set proxy options and path
-		esri.config.defaults.io.alwaysUseProxy = false;
-		esri.config.defaults.io.proxyUrl = DynamicLayerHost + "/proxy/proxy.ashx";
-
-		// set the default geometry service
-		esri.config.defaults.geometryService = new esri.tasks.GeometryService(DynamicLayerHost + "/ArcGIS/rest/services/Map_Utility/Geometry/GeometryServer");
 
 		// create municipality and qualifier search filter checkboxs
 		f_search_munis_build( );
 		f_search_qual_build( );
 		f_search_landuse_build( );
+		
+		njmcExtent = new esri.geometry.Extent({
+			xmin:566663,
+			ymin:664051,
+			xmax:652186,
+			ymax:747704,
+			spatialReference:{ "wkid":3424 }
+		})
 
 		// initialize map object, setting spatial reference and other properties
 		M_meri = new esri.Map( "map", {
-				logo: false,
-				nav: true,
-				extent: new esri.geometry.Extent({
-					xmin:566663,
-					ymin:664051,
-					xmax:652186,
-					ymax:747704,
-					spatialReference:{ "wkid":3424 }
-				})
-				//infoWindow: IW_meri
-				//infoTemplate: IW_meri_template
-				
-			});
-			
-		navToolbar = new esri.toolbars.Navigation( M_meri );
+			logo: false,
+			nav:true,
+			navigationMode: "css-transforms", //  'classic'
+			extent: njmcExtent
+		});
+		
+		
 		
 		scalebarDijit = new esri.dijit.Scalebar( {map: M_meri, scalebarUnit:"english", attachTo:"bottom-left"} );
 		
@@ -3131,13 +3103,16 @@ var aliases = {
 		LD_flooding = new esri.layers.ArcGISDynamicMapServiceLayer( DynamicLayerHost + "/ArcGIS/rest/services/Flooding/Flooding_Scenarios/MapServer",{opacity:0.65});
 		
 		// graphics layers to hold queries
-		GL_query_parcel = new esri.layers.GraphicsLayer( {opacity:0.60} );
+		GL_query_parcel = new esri.layers.GraphicsLayer( {opacity:0.60,} );
+		
 		GL_query_landuse = new esri.layers.GraphicsLayer( {opacity:0.60} );
 		GL_query_facility = new esri.layers.GraphicsLayer( {opacity:0.60} );
+		
 		
 		// graphics layer to hold parcel selections
 		GL_parcel_selection = new esri.layers.GraphicsLayer( {opacity:0.60} );
 		GL_parcel_owners = new esri.layers.GraphicsLayer( {opacity:0.60} );
+		
 		
 		GL_buffer_parcel = new esri.layers.GraphicsLayer( {opacity:0.60} );
 		GL_buffer_buffer = new esri.layers.GraphicsLayer( {opacity:0.60} );
@@ -3153,6 +3128,13 @@ var aliases = {
 		M_meri.addLayer( GL_buffer_parcel );
 		M_meri.addLayer( GL_buffer_buffer );
 		M_meri.addLayer( GL_query_parcel );
+		
+		 // GL_parcel_selection 		 .enableMouseEvents();
+		 // GL_parcel_owners 			 .enableMouseEvents();
+		 // GL_buffer_selected_parcels  .enableMouseEvents();
+		 // GL_buffer_parcel		     .enableMouseEvents();
+		 // GL_buffer_buffer            .enableMouseEvents();
+		 // GL_query_parcel             .enableMouseEvents();
 		
 		// resize the info window
 		M_meri.infoWindow.resize(440,300);
@@ -3176,15 +3158,14 @@ var aliases = {
 			
 			f_map_identify_init( );
 			
+			navToolbar = new esri.toolbars.Navigation( M_meri );
+			
 			//overviewMapDijit = new esri.dijit.OverviewMap( { map: M_merp, visible:false } );
 			//overviewMapDijit.startup();
 			
 			measurementDijit = new esri.dijit.Measurement( { map: map }, dojo.byId( 'dMeasureTool' ) );
-			
 			measurementDijit.startup();
 			
-			map.enableMapNavigation();
-						
 			// set symbols globally so they can be use for multiple feature groups
 			// esri.symbol.SimpleFillSymbol(style, outline, color)
 			// new dojo.Color([255,0,0,0.25]) R,G,B,transparency
@@ -3219,41 +3200,45 @@ var aliases = {
 				);
 				
 				
-			setTimeout(function(){loadingDialog.hide();},2000);
+			setTimeout( function(){ loadingDialog.hide();}, 2000 );
 			
 	
 		});
+		
+		////////  end on map Load
 		
 		dojo.connect( LD_base, "onLoad", function(){ f_layer_list_build( )});
 
 		// after the imagery layer is loaded, build the imagery list
 		dojo.connect( IL_basemap, "onLoad", function(){ f_imagery_list_build( )});
 
-		dojo.connect( M_meri, "onClick", f_map_click_handler );
-		
 		dojo.connect( M_meri, "onLayersAddResult", function( ){ 
 		
 			console.log("All Layers have been added.");
 
 		});
 		
-		dojo.connect(dojo.byId("map"), "resize", function() {
+		//dojo.connect( M_meri, "onMouseDrag", function(a){console.log("onMouseDrag",a)});
+		
+		dojo.connect( dojo.byId("map"), "resize", function() {
 				clearTimeout(resizeTimer);
-				resizeTimer = setTimeout(function() {
+				resizeTimer = setTimeout( function( ) {
 					M_meri.resize();
 					M_meri.reposition();
 					console.log("resize map");
 				}, 500);
 			});
 
-		// define event handlers for toolbar and other elements..
+		// define event handlers for toolbar and other elements..		
 
+		// NAVIGATION EVENTS
+		
 		dojo.connect( dojo.byId("nav_zoom_in"), "onclick", function( ) {
 			navToolbar.activate( esri.toolbars.Navigation.ZOOM_IN );
 		});
 
 		dojo.connect( dojo.byId("nav_zoom_out"), "onclick", function( ) {
-			navToolbar.activate( esri.toolbars.Navigation.ZOOM_OUT );
+			navToolbar.activate( esri.toolbars.Navigation.ZOOM_OUT);
 		});
 
 		dojo.connect( dojo.byId( "nav_zoom_fullext"), "onclick", function( ) {
@@ -3269,14 +3254,19 @@ var aliases = {
 		});
 
 		dojo.connect( dojo.byId("nav_pan"), "onclick", function( ) {
-			self.tool_selected = "select";
-			navToolbar.activate(  esri.toolbars.Navigation.PAN );
+			tool_selected = "pan";
+			M_meri.enableMapNavigation();
+			navToolbar.activate( esri.toolbars.Navigation.PAN );
+			
+			//_onMouseDragHandler_connect
+			//_panHandler_connect
+			
 		});
 		
 		dojo.connect( dojo.byId("nav_identify"), "onclick", function( ) {
 			navToolbar.activate( esri.toolbars.Navigation.PAN );
-			tool_selected="identify";
-			tabs_toggle("ResultsPane");
+			tool_selected = "identify";
+			tabs_toggle( "ResultsPane" );
 		});
 
 		dojo.connect( dojo.byId("nav_btn_select"), "onclick", function( ) {
@@ -3290,34 +3280,35 @@ var aliases = {
 		
 		dojo.connect( dojo.byId("aBufferParcelExec"), "onclick", f_multi_parcel_buffer_exec );
 		
-		dojo.connect(dojo.byId("nav_measure"),"onclick", function(){
+		dojo.connect( dojo.byId("nav_measure"), "onclick", function(){
 			navToolbar.deactivate();
+			measurementDijit.setTool("location",true);
 			tool_selected = "measure";
-			tabs_toggle("ResultsPane");
+			tabs_toggle( "ResultsPane" );
 			show_visibility( "dMeasureWrap" );
 		});
 
 		dojo.connect( dojo.byId( "LayersToggle" ), "onclick", function( ) {
-			tabs_toggle("MapLayers");
+			tabs_toggle( "MapLayers" );
 		});
 		
-		dojo.connect( dojo.byId("SearchTab"),"onclick", function( ) {
-			tabs_toggle("SearchPane");
+		dojo.connect( dojo.byId("SearchTab"), "onclick", function( ) {
+			tabs_toggle( "SearchPane" );
 		});
 		
-		dojo.connect(dojo.byId("ResultsTab"),"onclick", function( ) {
+		dojo.connect( dojo.byId("ResultsTab"),"onclick", function( ) {
 			tabs_toggle("ResultsPane");
 		});
 		
-		dojo.connect(dojo.byId("HelpTab"),"onclick", function( ) {
+		dojo.connect( dojo.byId("HelpTab"),"onclick", function( ) {
 			tabs_toggle("HelpPane");
 		});
 
-		dojo.connect( dojo.byId("i_btn_search_parcels"), "onclick", function( ) {
+		dojo.connect( dojo.byId( "i_btn_search_parcels" ), "onclick", function( ) {
 			f_query_parcel_exec();
 		});
 
-		dojo.connect( dojo.byId("rdo_muni_searchSelect"), "onclick", function(){
+		dojo.connect( dojo.byId( "rdo_muni_searchSelect" ), "onclick", function(){
 			dojo.fx.wipeIn( {node:"search_munis",duration:1000} ).play();
 		});
 
@@ -3359,6 +3350,7 @@ var aliases = {
 			dojo.fx.wipeIn({node:"search_landuse",duration:1000}).play();
 		});
 
+		dojo.connect( M_meri, "onClick", f_map_click_handler );
 		
 		//Default tab
 		tabs_toggle("HelpPane");
