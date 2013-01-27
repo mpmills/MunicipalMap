@@ -132,12 +132,15 @@ h3 a:visited{
 }
 
 .search_results{
-	
-	
+
 }
 
 .search_field{
 	width: 230px;
+}
+
+.searchParcelSection label{
+	font-weight:bold;
 }
 
 /* MAP ELEMENTS */
@@ -158,12 +161,13 @@ h3 a:visited{
     list-style-type: none;
     padding: 3px;
     text-align: left;
-	color:#F33;
+	color:navy;
 	text-decoration:none;
 }
 .dParcelItem a:active,
 .dParcelItem a:hover {
 	color: #4A6491;
+    text-decoration:underline;
 }
 
 .dSelParcelContainer{
@@ -261,9 +265,23 @@ ul#tablist li a {
     border-style: solid solid none;
     border-width: 1px 1px medium;*/
 }
+
+.dSubtabTitle{
+    font-size:1.3em;
+    font-weight:bold;
+    color:navy;
+    margin:6px 0 6px 0;
+    text-decoration:underline;
+    text-align:center;
+    border: 1px solid #d3d3d3;
+    padding:2px;
+    background-color:#f8f8f8;F
+}
+
 #MapLayers, #SearchPane, #ResultsPane{
 	display:none;}
-#MapLayers, #SearchPane, #ResultsPane, #HelpPane{
+
+#MapLayers, #SearchPane, #ResultsPane, #HelpPane, #SelectionPane, #MapPane{
 	overflow-y: auto;
 	overflow-x: hidden;
 	
@@ -344,9 +362,6 @@ ul#tablist li a {
 
 .dijitButtonNode, .esriButton{margin:6px;}
 .dijitReset{margin:6px;}
-#dBufferTool{
-	display:none;
-}
 
 .toc_legend_toggle{
 	height:10px;
@@ -410,6 +425,110 @@ ul#tablist li a {
 	background-repeat:no-repeat;
 	padding: 0.4em 1em 0.4em 20px
 }
+.property_photo{
+
+	height:170px;
+}
+
+#tblSearchResultsParcel{
+	width:100%;
+	
+}
+#tblSearchResultsParcel tr{
+	border: 1px solid #cccccc;
+}
+
+#dSearchDivFloat{
+	position:absolute;
+}
+
+.dParcelSearchToolPopup{
+	
+	padding:4px;
+	border-top-left-radius: 6px 6px;
+	border-bottom-left-radius: 6px;
+	-moz-border-radius-topleft: 6px 6px;
+	-moz-border-radius-bottomleft: 6px 6px;
+	border:1px solid #6699CC;
+	background-color:#FFFFFF;
+	color:#666666;
+}
+
+.dParcelSearchToolPopup a{
+	border:1px thin #999999;
+	padding:2px;
+	background-color:#6699CC;
+	color:#FFFFFF;
+	margin-left:4px;
+}
+
+.dParcelSearchToolPopup a:hover{
+	background-color:#FFFFFF;
+	color:#6699CC;
+}
+
+
+/* Sortable tables */
+table.sortable thead {
+    background-color:#eee;
+    color:#666666;
+    font-weight: bold;
+    cursor: default;
+}
+table.sortable tbody {
+    font-size:small;
+	background-color:#eee;
+    color:#666666;
+    cursor: default;
+}
+
+#dBufferTool{
+    display:none;
+    position: fixed;
+    top: 25;
+    left: 380px;
+    background-color: #FFFFFF;
+    border:1px solid #CCCCCC;
+    margin:3px;
+    padding:3px;
+
+}
+
+#dBufferToolTitle{
+    background-color:#666666;
+    color:#FFFFFF;
+    font-weight:bold;
+    margin:3px;
+    text-align: center;
+    font-size: 14px;
+}
+
+
+/* Search Filters */
+
+.dSearchFilterContainer{
+    background-color:#F8F8F8;
+    padding:2px;
+    border:1px solid #999999;
+}
+
+.dSearchFilterToggle{
+    font-weight:bold;
+    text-decoration:underline;
+    margin:3px;
+}
+.dSearchFilterItemsToggle{
+    /*text-align: center;*/
+    margin-left:20px;
+}
+
+.dSearchFilterItems{
+    margin-left:75px;
+    /*margin-left:25%;*/
+}
+
+
+
 @media print
 {
 	#M_meri{display:block;}

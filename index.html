@@ -1,23 +1,21 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/html">
+<html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
-    <meta name="viewport" content="initial-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no"/>
-    <!-- meta tags to hide url and minimize status bar to give the web app a native app look.. this only happens after app is saved to the desktop-->
+    <meta http-equiv="X-UA-Compatible" content="IE=7,IE=9">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="translucent-black" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
     <title>New Jersey Meadowlands Commission &raquo; Municipal Map v.2</title>
 
-    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.2/js/esri/css/esri.css" />
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.3/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" type="text/css" href="http://serverapi.arcgisonline.com/jsapi/arcgis/3.3/js/esri/css/esri.css" />
 
     <link rel="stylesheet" type="text/css" href="map.css" />
 
     <script>dojoConfig = { parseOnLoad:true };</script>
-    <script src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.2"></script>
+    <script src="http://serverapi.arcgisonline.com/jsapi/arcgis/?v=3.3"></script>
     <script src="MERI_Map_Properties.js"></script>
     <script src="MERI_formatting.js"></script>
     <script src="sorttable.js"></script>
@@ -70,23 +68,17 @@
     -->
     <div>
         <strong>Selections: </strong>
-        <a href="#" onclick="selection_tab_display('selection_search');" class="selectionTab" id="selectionTabSearch"> SEARCH </a>
-        <a href="#" onclick="selection_tab_display('selection_map');" class="selectionTab" id="selectionTabMap"> MAP</a>
+        <a href="#" onclick="selection_tab_display('selection_map');" class="selectionTab" id="selectionTabMap"> MAP &amp; SEARCH</a>
         <a href="#" onclick="selection_tab_display('selection_buffer');" class="selectionTab" id="selectionTabBuffer"> BUFFER </a>
     </div>
 
-    <div id="selection_search" class="dSelectionResults">
-        <div class="dSubtabTitle" title="Parcels selected from search tab.">Selections from Search</div>
-        <div id="dSelectionSummarySearch">No selections have been made from the search tab.</div>
-        <div id="r_map_search"></div>
-    </div>
     <div id="selection_map" class="dSelectionResults">
-        <div class="dSubtabTitle" title="Parcels selected from map clicks.">Selections from Map</div>
-        <div id="dSelectionSummaryMap">No selections have been made from the web map.</div>
+        <div class="dSubtabTitle" title="Parcels selected from map clicks.">Selected Parcels ( Map &amp; Search)</div>
+        <div id="dSelectionSummaryMap">No selections have been added from Map or Search.</div>
         <div id="r_map_selection"></div>
     </div>
     <div id="selection_buffer" class="dSelectionResults">
-        <div class="dSubtabTitle" title="Parcels selected from Buffer Area">Selections from Buffer</div>
+        <div class="dSubtabTitle" title="Parcels selected from Buffer Area">Parcels Selected from Buffer</div>
         <div id="dSelectionSummaryBuffer">No selections have been made from the buffer.</div>
         <div id="r_map_buffer"></div>
     </div>
@@ -95,7 +87,7 @@
     <div id="Links_ERIS"></div>
     <div id="Results_ERIS"></div>
 
-    <div id="dIdentifyResults" ></div>
+
     <!--<div id="dSearchResults" class="ctrl_wipe"></div>-->
 
 </div><!-- SelectionPane-->
@@ -197,8 +189,8 @@
         <input type="button" class="i_search_button" value="Search for Properties" id="i_btn_search_parcels"/>
 
         <!--<div id="r_search_parcel" class="search_results"></div>-->
-        <div id="dSearchResultsParcelTitle">..parcelTitle.. used? </div>
         <div id="dSearchResultsSummary">0 Parcels / 0 Acres</div>
+        <div id="dSearchResults_withSelected"><a href="#" onclick="f_search_addCheckedToSelection()">Add checked items to Selection.</a></div>
 
         <div id="dSearchResultsLoadingParcel">
             <div id="dLoadingSearch" style="display:none">
@@ -206,7 +198,6 @@
             </div>
         </div>
 
-        <div id="dSearchResultsParcelSummary">..parcelSummary..</div>
         <div id="dSearchResultsParcel">
             <table id="tblSearchResultsParcel" class="sortable">
                 <thead>
@@ -349,6 +340,7 @@
 
 
 </div><!-- wrapper -->
+
 <div id="dSearchDivFloat"></div>
 
 <div id="dBufferTool">
@@ -365,6 +357,8 @@
         </div>
     </div>
 </div>
+
+
 
 <script type="text/javascript">
 
@@ -410,11 +404,10 @@
 
 // dependecies object.. used on load to ensure all objects are loaded in advance
 var dependencies = {
-    "landuse":{"isLoaded":false},
-    "legend":{"isLoaded":false}
-};
-
-var loadingDialog;
+            "landuse":{"isLoaded":false},
+            "legend":{"isLoaded":false}
+        },
+        loadingDialog;
 
 // dojo requires
 // esri loading
@@ -452,7 +445,7 @@ require(
             "esri/tasks/geometry",
             "esri/tasks/query",
 
-            "dojo/domReady!",
+            "dojo/domReady!"
 
         ],
 
@@ -484,7 +477,6 @@ require(
                 url: "http://webmaps.njmeadowlands.gov/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/3?f=json",
                 handleAs: "json",
                 load: function(json) {
-                    //alert("The message is: " + result);
                     for( field in json.fields ){
                         if( json.fields[field].name == "LANDUSE_CODE"){
                             landuse_json = json.fields[field].domain.codedValues;
@@ -517,7 +509,6 @@ require(
 
                     dependencies["landuse"].isLoaded = true;
                     loadContinue( );
-
                 }
             });
 
@@ -575,19 +566,26 @@ var fSet_selected_parcels = [], fSet_buffered_parcels = [];
 // GRAPHIC LAYERS
 ///////////////////////
 
-// SELECTION
-var GL_parcel_selection;
-var GL_parcel_owners;
+var GL_parcel_selection,// map click selections and search selections
 
 // BUFFER
-var GL_buffer_parcel, GL_buffer_buffer, GL_buffer_selected_parcels;
-//var GL_parcel_selection_buffer, GL_parcel_buffer, GL_parcel_buffer_parcels;
+    GL_buffer_parcel, // selected parcels to buffer
+    GL_buffer_buffer, // buffer area - actual buffer geometry calculated from buffer functionality
+    GL_buffer_selected_parcels, // parcels selected from running the buffer
 
 // SEARCH RESULTS
-var GL_query_parcel, GL_query_landuse, GL_query_facility,  GL_parcel_owners;
+    GL_parcel_owners; // parcel owners
 
+
+///////////////////////
 // SYMBOLS
-var S_feature_selection, S_feature_flash, S_buffer_parcel, S_buffer_buffer, S_buffer_selected_parcels;
+///////////////////////
+
+var S_feature_selection, // selected parcels by map click
+    S_feature_flash, // flash parcel symbol
+    S_buffer_parcel, // parcels used for buffer
+    S_buffer_buffer, // buffer area
+    S_buffer_selected_parcels; // parcels selected from buffer
 
 // BUFFER GEOMETRY SERVICE
 var GS_parcel_selection_buffer;
@@ -597,8 +595,6 @@ var TP_parcel_selection_buffer;
 
 // NAVIGATION MENU SELECTION BASED QUERIES
 var QT_parcel_selection, Q_parcel_selection;
-
-var printMapLink = "http://webmaps.njmeadowlands.gov/municipal/print_parcel_info.php?id=";
 
 // dojo dijits
 var overviewMapDijit, measurementDijit, scalebarDijit;
@@ -610,35 +606,15 @@ var L_opacities = {};
 var IL_basemap;
 // templates for features
 
-// simple objects that can be copied on each template usage
-// provides one place to edit all templates
-
 // imagery layers.. toc imagery is dynamically built from JSON object
 var map_legend, map_legend_eris;
 
-// map layers... toc for layers is dynamically build from JSON object
-
-var map_layers_flooding_json = {
-    "title":"Flooding Scenarios",
-    title_tgf:"Predicted Flooding in absence of tidegates",
-    title_surge:"Storm Surge",
-    scenarios:
-            [
-                {"group":8,"lyr":1,"vis":0},
-                {"group":7,"lyr":4,"vis":0},
-                {"group":6,"lyr":7,"vis":0},
-                {"group":5,"lyr":10,"vis":0},
-                {"group":4,"lyr":13,"vis":0},
-                {"group":3,"lyr":16,"vis":0},
-                {"group":2,"lyr":19,"vis":0}
-            ]
-};
-
+// map layers... toc map layers is dynamically built from JSON object
 var landuse_json;
 
 // Tab Menus for Search and Selections
 var SearchDivs = ["search_PROP","search_OWNR"];
-var SelectionDivs = ["selection_search", "selection_map", "selection_buffer"];
+var SelectionDivs = ["selection_map", "selection_buffer"];
 
 var search_LandUseIDs = [];
 var GV_current_ownerid;
@@ -747,7 +723,7 @@ function f_layer_list_build(  ) {
         dojo.byId("map_layer_groups").appendChild( e_div_group);
     });
 
-    // create toc group div
+    // create toc group div for flooding
     var e_div_flood = dojo.doc.createElement("div");
     e_div_flood.setAttribute("class","toc_group_div");
     e_div_flood.id = "toc_grp_flood";
@@ -892,6 +868,7 @@ function f_layer_list_eris_update() {
 
 function f_toc_vis( show ){
 
+    // get selection of all groups by class
     var groups = dojo.query( ".toc_group_container" );
 
     if( show ){
@@ -973,7 +950,8 @@ function f_image_layer_toggle(img_layer){
 function f_map_click_handler( evt_click ){
 
     // debug logging
-    console.log("map clicked:\n  current tool: "+ tool_selected );
+    console.log("f_map_click_handler( evt_click)");
+    console.log(evt_click);
 
     switch( tool_selected ){
         case "select": 		f_parcel_selection_exec( evt_click ); break;
@@ -986,6 +964,7 @@ function f_map_click_handler( evt_click ){
 
 function f_toolbar_select(tool){
 
+    // when user clicks tool in toolbar, set button style.. red border for now.. consider changing class for easier customization
     tools = ["nav_measure", "nav_btn_select", "nav_zoom_in", "nav_zoom_out", "nav_pan", "nav_identify"];
 
     dojo.forEach(tools, function(tool){
@@ -1030,8 +1009,6 @@ function f_map_identify_exec( click_evt ) {
 
     IT_Map_All.execute(IP_Map_All,function(identifyResults){
 
-        //alert("yay - results: " + results.features.length);
-
         dojo.forEach(identifyResults, function(identifyResult){
 
             // identifyResult has following objects
@@ -1074,6 +1051,7 @@ function f_map_identify_exec( click_evt ) {
                 el_layer_attr.appendChild( el_layer_attr_val );
                 el_layer.appendChild( el_layer_attr );
             });
+
             dojo.byId( "dIdentifyResults" ).appendChild( el_layer );
         });
     }, showerror);
@@ -1105,8 +1083,8 @@ function f_parcel_selection_exec( map_event ){
     Q_parcel_selection.geometry = map_event.mapPoint;
     // run the query task and pass results to the process_results_parcel function, passing "selection" as the type
     QT_parcel_selection.execute( Q_parcel_selection, function( results ){
-        console.log("parcel selected");
-        f_process_results_parcel( "selection", results );
+        console.log("parcel selected from map click");
+        f_process_results_parcel_click( results );
         //f_process_results_parcel( "selection_map", results );
     });
 }
@@ -1120,36 +1098,20 @@ function f_parcel_selection_exec( map_event ){
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+
 function f_feature_action(funct, type, object_attr, oid){
 
     console.log( "f_feature_action(funct, type, object_attr, oid)");
+    //devlog alert( "f_feature_action(funct, type, object_attr, oid)");
     console.log( funct, type, object_attr, oid);
 
     if(oid==="undefined"){alert("oid is undefined");}
 
-    var graphics_layer, target_div, child_div, object_attr, summaryDiv;
+    var graphics_layer, target_div, child_div;
 
-    alert("TYPE: " + type + " ( type switch needs to be refactored to combine funct and type?) ");
+    //devlog  alert("TYPE: " + type + " ( type switch needs to be refactored to combine funct and type?) ");
 
     switch( type ){
-
-        case "addSelection":
-            graphics_layer = GL_query_parcel;
-            target_div = "dSearchResultsParcel";
-            child_div = "r_parcel_" + oid;
-            summaryDiv = "";
-
-        case "selectionSearch":
-            graphics_layer = GL_parcel_selection;
-            target_div = "r_map_selection";
-            child_div = "selParcel_" + oid;
-            break;
-
-        case "selection":
-            graphics_layer = GL_parcel_selection;
-            target_div = "r_map_selection";
-            child_div = "selParcel_" + oid;
-            break;
 
         case "search":
             graphics_layer = GL_query_parcel;
@@ -1158,12 +1120,10 @@ function f_feature_action(funct, type, object_attr, oid){
             child_div = "r_parcel_" + oid;
             break;
 
-        case "parcel":
-
-            graphics_layer = GL_query_parcel;
-            target_div = "dSearchResultsParcel";
-            //child_div = "searchParcel_" + oid;
-            child_div = "r_parcel_" + oid;
+        case "selection":
+            graphics_layer = GL_parcel_selection;
+            target_div = "r_map_selection";
+            child_div = "selParcel_" + oid;
             break;
 
         case "parcel_owners":
@@ -1177,37 +1137,45 @@ function f_feature_action(funct, type, object_attr, oid){
             target_div = "r_map_buffer";
             child_div = "selParcelBuffer_" + oid;
             break;
-
+        default:
+            //devlog console.log("INVALID Featurea action TYPE");
+            break;
     }
 
     console.log("graphics_layer, target_div, child_div, object_attr, summaryDiv");
-    console.log(graphics_layer, target_div, child_div, object_attr, summaryDiv);
+    console.log(graphics_layer, target_div, child_div, object_attr);
 
     switch( funct ){
 
         case "Add to Selection":
 
-            var selected_graphic;
+            var selected_graphics = [];
 
             for(var i=0; i < GL_query_parcel.graphics.length; i++){
 
                 if(GL_query_parcel.graphics[i].attributes.PID == oid){
-                    GL_parcel_selection.add(GL_query_parcel.graphics[i]);
-                    console.log("graphic added for PID:" + oid);
+
+                    f_search_add_selections([GL_query_parcel.graphics[i]]);
+
+                    //devlog alert("graphic added for PID:" + oid);
+
                 }
-            }
+            };
 
             // updates search totals?
-            f_selectionUpdateSearchTotals( GL_parcel_selection, "dSelectionSummarySearch");
-            f_selectionUpdateSearch( GL_parcel_selection, "dSelectionSummarySearch");
+            //f_selectionUpdateSearchTotals( GL_parcel_selection, "dSelectionSummarySearch");
+            // f_selectionUpdateSearchTotals( GL_parcel_selection, "dSelectionSummaryMap");
+
+            // f_selectionUpdateSearch( GL_parcel_selection, "dSelectionSummaryMap");
 
             break;
 
         case "Zoom To":
 
             for( var x=0; x < graphics_layer.graphics.length; x++){
-                if( graphics_layer.graphics[x].attributes[ object_attr ] == oid ){
-                    M_meri.setExtent( graphics_layer.graphics[x].geometry.getExtent().expand(1.3),true );
+                var graphic = graphics_layer.graphics[x];
+                if( graphic.attributes[ object_attr ] == oid ){
+                    M_meri.setExtent(graphic.geometry.getExtent().expand(1.3),true );
                     break;
                 }
             }
@@ -1215,8 +1183,9 @@ function f_feature_action(funct, type, object_attr, oid){
 
         case "Pan To":
             for(var x=0; x< graphics_layer.graphics.length;x++){
-                if( graphics_layer.graphics[x].attributes[object_attr] == oid ){
-                    M_meri.centerAt(graphics_layer.graphics[x].geometry.getExtent().getCenter());
+                var graphic = graphics_layer.graphics[x];
+                if( graphic.attributes[object_attr] == oid ){
+                    M_meri.centerAt(graphic.geometry.getExtent().getCenter());
                     break;
                 }
             }
@@ -1237,6 +1206,7 @@ function f_feature_action(funct, type, object_attr, oid){
                     // get current symbol so we can put it back correctly
                     var curSymbol = graphics_layer.graphics[x].symbol;
 
+                    //todo: update flash symbol
                     var flashSymbol = new esri.symbol.SimpleFillSymbol(
                             esri.symbol.SimpleFillSymbol.STYLE_SOLID,
                             new esri.symbol.SimpleLineSymbol( esri.symbol.SimpleLineSymbol.STYLE_SOLID, divFlashColor, 2),
@@ -1286,92 +1256,40 @@ function f_feature_action(funct, type, object_attr, oid){
                 }
             }
 
-            f_summarize_totals( graphics_layer, type, summaryDiv);
+            f_summarize_totals( graphics_layer.graphics, type, "dSelectionSummaryMap");
 
             break;
     }
-}
+};
 
-function f_process_results_parcel_search( type, results ){
+function f_process_results_parcel_search( results ){
 
-    console.log("FUNCTION || f_process_results parcel ||\n Type: " + type + "\n");
+    // append search results to results table.. one table row per result
 
-    var target_div, feature_div, GL_container, GL_count, IW_template, G_symbol, object_attr;
-    console.log(" Target: || " + target_div + "\n");
+    //devlogalert("f_process_results_parcel_search( results )");
+    console.log("f_process_results_parcel_search( results )");
 
-    // set field as PID, only changes are Facility and owner
-    object_attr = "PID";
+    var target_div = "dSearchResultsSummary",  // which div should the summary results appear in
+            feature_div = "searchProperty_", // each table row will be prepended with this key. used when access is needed to element
+            GL_container = GL_query_parcel, // graphics layer to add results to
+            GL_count = GL_container.graphics.length, // count of records currently in search results
+            IW_template = F_IW_templates.parcel, // info window template.. defined in higher scope
+            G_symbol = S_feature_selection, // graphic symbol for newly added search results
+            object_attr = "PID", // object id field in result set.. used PID for parcel..
+            el_tbody = dojo.byId("tblBodySearchResultsParcel"); // element reference to search results table to append to
 
-    // set appropriate graphics title, graphics layer, info window template, graphic symbol, and GL count
-    switch(type){
-
-        case "search":
-            GL_container = GL_query_parcel;
-            IW_template = F_IW_templates.parcel;
-            G_symbol = S_feature_selection;
-            target_div = "dSearchResultsParcel";
-            feature_div = "r_parcel_";
-            break;
-
-        case "parcel":
-            GL_container = GL_query_parcel;
-            IW_template = F_IW_templates.parcel;
-            G_symbol = S_feature_selection;
-            target_div = "dSearchResultsParcel";
-            feature_div = "r_parcel_";
-            break;
-
-        case "parcel_owners":
-            target_div = "r_owner";
-            feature_div = "selParcelOwner";
-
-            GL_container = GL_parcel_owners;
-            IW_template = F_IW_templates.parcel;
-            G_symbol = S_feature_selection;
-            break;
-
-        case "selection":
-            target_div = "r_map_selection";
-            feature_div = "selParcel_";
-
-            GL_container = GL_parcel_selection;
-            IW_template = F_IW_templates.parcel;
-            G_symbol = S_feature_selection;
-            break;
-
-        case "buffer":
-            target_div = "r_map_buffer";
-            feature_div = "selParcelBuffer_";
-
-            GL_container = GL_buffer_selected_parcels;
-            IW_template = F_IW_templates.parcel;
-            G_symbol = S_feature_selection;
-            break;
-    }
-
-    // set graphics count
-    GL_count = GL_container.graphics.length;
-
-    console.log("-- Type: " + type + "\nTarget: " + target_div + "\n Feature Count: "+ GL_count);
-
-    var el_tbody = dojo.byId("tblBodySearchResultsParcel")
-
-    // parse search results
+    // iterate through all newly found search results
     for ( var i=0, il = results.features.length; i < il; i++) {
 
+        // add a table row for each result.. show address, block, lot, and tools button
         var featureAttributes = results.features[ i ].attributes;
 
         // if feature does not already exist, add feature to search results
-        if( !findAttributeInGL(GL_container,"PID", featureAttributes.PID)){
+        if( !f_findAttributeInGL(GL_container, object_attr, featureAttributes.PID)){
 
             var graphic = results.features[ i ];
 
             console.log("GRAPHIC: ", GL_container, graphic, "typeof", featureAttributes.PID, GL_container.graphics[featureAttributes.PID]);
-
-            //if the layer type is buffer, append the PID list for the export link
-            //if( type=="buffer" ){
-            //	str_pid_list += featureAttributes[ "PID" ] + ",";
-            //}
 
             graphic.setSymbol( G_symbol );
             graphic.infoTemplate = IW_template;
@@ -1398,11 +1316,12 @@ function f_process_results_parcel_search( type, results ){
             // create a table row for each search result
 
             var	el_tr = dojo.doc.createElement("tr");
-            el_tr.setAttribute("id","searchProperty_" + featureAttributes[ "PID" ]);
+            el_tr.setAttribute("id",feature_div + featureAttributes[ object_attr]);
 
             var el_checkbox = dojo.doc.createElement("input");
             el_checkbox.setAttribute("type","checkbox");
             el_checkbox.setAttribute("class","searchParcelCheckbox");
+            el_checkbox.setAttribute("data-pid", featureAttributes[ object_attr ]);
 
             el_td0 = dojo.doc.createElement("td");
             el_td0.appendChild(el_checkbox);
@@ -1424,7 +1343,7 @@ function f_process_results_parcel_search( type, results ){
 
             var el_featureToolButton = dojo.doc.createElement("a");
             el_featureToolButton.setAttribute( "href", "#");
-            el_featureToolButton.setAttribute("onclick","f_search_toolPopup('"+type+"',"+featureAttributes[ object_attr ] + ",this)");
+            el_featureToolButton.setAttribute("onclick","f_search_toolPopup('search',"+featureAttributes[ object_attr ] + ",this)");
             el_featureToolButton.innerHTML = "<img src=\"wrench.png\" style=\"height:22px;width:22px;\" >";
             // add imge here
 
@@ -1440,22 +1359,72 @@ function f_process_results_parcel_search( type, results ){
 
         }
     }
-    f_summarize_totals( GL_container.graphics, type, "dSearchResultsSummary" );
-}
 
-function findAttributeInGL(GL, attr, attr_val){
+    // update totals for search summary
+    f_summarize_totals( GL_container.graphics, "search", target_div );
+};
 
-    console.log("findAttributeInGL(GL, attr, attr_val)");
-    console.log(GL, attr, attr_val);
+function f_search_addCheckedToSelection(){
 
-    // will need to loop through all graphics and search for graphics[each].attributes.PID
-    for ( var i=0; i < GL.graphics.length; i++){
-        if( GL.graphics[i].attributes[attr] == attr_val){
-            return true;
-            break;
+    // select checked items from from search results and add to selection layer
+
+    //devlogalert("with selected");
+    var currentPIDSinLayer = f_getAttrAryFromGL( GL_parcel_selection, "PID"),
+            graphicsAdded = 0;
+
+    dojo.query(".searchParcelCheckbox:checked")
+            .attr("data-pid")
+            .forEach(
+            function(pid){
+                // test if pid already exists in GL_parcel_selection
+                dojo.style("searchProperty_" + pid,{
+                    "background-color":"white",
+                    "text-decoration":"line-through"
+                });
+
+                if( ! InArray(currentPIDSinLayer,pid) ) {
+                    f_feature_action("Add to Selection", "search", "PID", pid);
+                    graphicsAdded++;
+                }
+            });
+
+    //devlogalert(graphicsAdded + " graphic" + (graphicsAdded.length > 1 ? "":"s") +" added!");
+
+};
+
+function f_getAttrAryFromGL( GL, attr){
+
+    var pids = [];
+
+    GL.graphics.forEach(function(graphic){
+        pids.push( graphic.attributes[attr] );
+    });
+
+    return pids;
+};
+
+function f_findAttributeInGL(GL, attr, attr_val){
+
+    console.log("f_findAttributeInGL(GL, attr, attr_val)");
+    console.log(GL, "attr:" + attr, "attr_val:" + attr_val);
+    var returnVal = false;
+
+    GL.graphics.forEach(function(graphic){
+        if(graphic["attributes"][attr] == attr_val){
+            returnVal = true;
         }
-    }
-    return false;
+    });
+
+    return returnVal;
+
+//    // will need to loop through all graphics and search for graphics[each].attributes.PID
+//    for ( var i=0; i < GL.graphics.length; i++){
+//        if( GL.graphics[i].attributes[attr] == attr_val){
+//            return true;
+//            break;
+//        }
+//    }
+//    return false;
 }
 
 function f_search_toolPopup(type, PID, evt){
@@ -1465,7 +1434,7 @@ function f_search_toolPopup(type, PID, evt){
 
     /*
 
-    evt properties.. can be removed
+     evt properties.. can be removed
 
      altKey: false
      bubbles: true
@@ -1526,7 +1495,7 @@ function f_search_toolPopup(type, PID, evt){
     el_featureToolPrint.innerHTML = "Print";
 
     //create feature action buttons for each result.. related function must be defined in
-    dojo.forEach(["Add to Selection", "Remove", "Zoom To", "Pan To", "Flash"], function(a){
+    dojo.forEach(["Add to Selection", "Zoom To", "Pan To", "Flash"], function(a){
 
         var el_featureTool = dojo.doc.createElement("a");
         el_featureTool.setAttribute("onclick", 'f_feature_action("'+ a +'","' + type + '","PID","' + PID +'")');
@@ -1573,9 +1542,371 @@ function f_search_toolPopup(type, PID, evt){
 
 };
 
+function f_search_add_selections(graphics){
+
+    console.log("GRAPHICS from add selections " , graphics);
+
+    // add a new graphic in the selections graphics layer for each parcel added
+    // create a Parcel Item in list for each PID
+
+    var target_div = "r_map_selection",
+            summaryTarget = "dSelectionSummaryMap",
+            feature_div = "selParcel_",
+            GL_container = GL_parcel_selection,
+            IW_template = F_IW_templates.parcel,
+            G_symbol = S_feature_selection,
+            object_attr = "PID";
+
+    dojo.forEach(graphics, function(graphic){
+
+        var featureAttributes = graphic.attributes;
+
+        graphic.setSymbol( G_symbol );
+        graphic.infoTemplate = IW_template;
+
+        GL_container.add( graphic );
+
+        var GL_count = GL_container.graphics.length;
+
+        // show all Parcel Attributes.. // show link to parcel layer // set header of template // set content of template
+
+        // create container element
+        var el_parcel = dojo.doc.createElement("div");
+        el_parcel.id = feature_div + featureAttributes[object_attr];
+        el_parcel.setAttribute("class","dParcelItem");
+
+        // prepend content with a horizontal rule
+        el_parcel.appendChild( dojo.doc.createElement("hr") );
+
+        // create dom a element - link to print map
+        var el_featureToolPrint = dojo.doc.createElement("a");
+        //el_featureToolFlash.setAttribute("onclick","f_feature_action("print",""+type+"",""+object_attr+"",""+ featureAttributes[object_attr] +"")");
+        el_featureToolPrint.setAttribute( "href", printMapLink + featureAttributes[ object_attr ] );
+        el_featureToolPrint.setAttribute( "target", "_blank" );
+        el_featureToolPrint.innerHTML = "Print";
+
+        // create dom a element - tool to view owners
+        //var el_featureToolOwners = dojo.doc.createElement("a");
+        //el_featureToolOwners.setAttribute("onclick","f_parcel_selection_owners(""+type+"",""+ featureAttributes["PID"] +"")");
+        //el_featureToolOwners.setAttribute("href","#");
+        //el_featureToolOwners.innerHTML = "View Owners";
+
+        var el_featureAttribs = dojo.doc.createElement("div");
+        el_featureAttribs.setAttribute( "class", "dSelParcelContainer" );
+
+        // check if image is there
+        //if so, create img
+
+        // echo attributes.  can use a template here eventually.. just bold and show field contents for now
+        var output = "<ul class=\"ResultList SelectionResult\">";
+        for ( attr in featureAttributes ) {
+            output +=  FormatResult( attr, featureAttributes[ attr ], "selection" );
+        }
+        output += "</ul>";
+
+        el_featureAttribs.innerHTML += output;
+
+        // create view more details link
+
+        var el_viewMoreDiv = dojo.doc.createElement("div");
+        el_viewMoreDiv.setAttribute("class","dSummaryViewMore")
+        el_viewMoreDiv.id = "detail_"+feature_div +"_"+ featureAttributes[object_attr];
+
+        var el_viewMoreToggle = dojo.doc.createElement("div");
+        el_viewMoreToggle.setAttribute("class","dSummaryToggle");
+
+        var el_viewMoreToggleLink = dojo.doc.createElement("a");
+        el_viewMoreToggleLink.id="detail_view_a_"+featureAttributes[object_attr];
+        el_viewMoreToggleLink.setAttribute("href","#");
+        el_viewMoreToggleLink.innerHTML = "-- View More --";
+        el_viewMoreToggleLink.setAttribute("onclick","f_result_detail(\"parcel\",\""+el_viewMoreDiv.id+"\"," + featureAttributes[object_attr] + "," + featureAttributes["oid"] +")");
+
+        // add anchor to toggle div
+        el_viewMoreToggle.appendChild( el_viewMoreToggleLink );
+
+        // add toggle div to View More container
+        el_viewMoreDiv.appendChild( el_viewMoreToggle );
+
+        //create feature action buttons for each result
+        dojo.forEach(["Remove", "Zoom To", "Pan To", "Flash"],function(a){
+
+            var el_featureTool = dojo.doc.createElement("a");
+            el_featureTool.setAttribute("onclick", "f_feature_action(\""+a+"\",\"" + "selection" + "\",\"" + object_attr + "\",\"" + featureAttributes[ object_attr ] +"\")");
+            el_featureTool.setAttribute("href","#");
+            el_featureTool.innerHTML = a;
+
+            el_parcel.appendChild(el_featureTool);
+
+        });
+
+        el_parcel.appendChild( el_featureToolPrint );
+        el_parcel.appendChild( el_featureAttribs );
+        el_parcel.appendChild( el_viewMoreDiv );
+
+        //el_parcel.appendChild( el_featureToolOwners);
+        // no ownID is available, so we"ll need to create an additional owner search using parcel as entrance"
+        //<a href="javascript:query_owner_int_exec("+feature.attributes["OWNID"]+")">view owner parcels</a>:<hr />
+
+        //dojo.byId("r_search_" + GV_current_ownerid).appendChild( el_parcel);
+
+        // if the type is a buffer, we will add the export to excel link
+
+        dojo.byId( target_div ).appendChild( el_parcel );
+
+    });
+
+
+    f_summarize_totals( GL_container.graphics, "selection", summaryTarget );
+};
+
+function f_process_results_parcel_click( results ){
+
+    //devlogalert("f_process_results_parcel_click( results )");
+
+    var target_div = "r_map_selection",
+            summaryTarget = "dSelectionSummaryMap",
+            feature_div = "selParcel_",
+            GL_container = GL_parcel_selection,
+            IW_template = F_IW_templates.parcel,
+            G_symbol = S_feature_selection,
+            object_attr = "PID";
+
+    GL_count = GL_container.graphics.length;
+
+    for ( var i=0, il = results.features.length; i < il; i++) {
+
+        var featureAttributes = results.features[ i ].attributes;
+        var graphic = results.features[ i ];
+
+        //if the layer type is buffer, append the PID list for the export link
+        //if( type=="buffer" ){
+        //	str_pid_list += featureAttributes[ "PID" ] + ",";
+        //}
+
+        graphic.setSymbol( G_symbol );
+        graphic.infoTemplate = IW_template;
+
+        GL_container.add( graphic );
+
+        var GL_count = GL_container.graphics.length;
+
+        // show all Parcel Attributes.. // show link to parcel layer // set header of template // set content of template
+
+        // create container element
+        var el_parcel = dojo.doc.createElement("div");
+        el_parcel.id = feature_div + featureAttributes[object_attr];
+        el_parcel.setAttribute("class","dParcelItem");
+
+        // prepend content with a horizontal rule
+        el_parcel.appendChild( dojo.doc.createElement("hr") );
+
+        // create dom a element - link to print map
+        var el_featureToolPrint = dojo.doc.createElement("a");
+        //el_featureToolFlash.setAttribute("onclick","f_feature_action("print",""+type+"",""+object_attr+"",""+ featureAttributes[object_attr] +"")");
+        el_featureToolPrint.setAttribute( "href", printMapLink + featureAttributes[ object_attr ] );
+        el_featureToolPrint.setAttribute( "target", "_blank" );
+        el_featureToolPrint.innerHTML = "Print";
+
+        // create dom a element - tool to view owners
+        //var el_featureToolOwners = dojo.doc.createElement("a");
+        //el_featureToolOwners.setAttribute("onclick","f_parcel_selection_owners(""+type+"",""+ featureAttributes["PID"] +"")");
+        //el_featureToolOwners.setAttribute("href","#");
+        //el_featureToolOwners.innerHTML = "View Owners";
+
+        var el_featureAttribs = dojo.doc.createElement("div");
+        el_featureAttribs.setAttribute( "class", "dSelParcelContainer" );
+
+        // check if image is there
+        //if so, create img
+
+        // echo attributes.  can use a template here eventually.. just bold and show field contents for now
+        var output = "<ul class=\"ResultList SelectionResult\">";
+        for ( attr in featureAttributes ) {
+            output +=  FormatResult( attr, featureAttributes[ attr ], "selection" );
+        }
+        output += "</ul>";
+
+        el_featureAttribs.innerHTML += output;
+
+        // create view more details link
+
+        var el_viewMoreDiv = dojo.doc.createElement("div");
+        el_viewMoreDiv.setAttribute("class","dSummaryViewMore")
+        el_viewMoreDiv.id = "detail_"+feature_div +"_"+ featureAttributes[object_attr];
+
+        var el_viewMoreToggle = dojo.doc.createElement("div");
+        el_viewMoreToggle.setAttribute("class","dSummaryToggle");
+
+        var el_viewMoreToggleLink = dojo.doc.createElement("a");
+        el_viewMoreToggleLink.id="detail_view_a_"+featureAttributes[object_attr];
+        el_viewMoreToggleLink.setAttribute("href","#");
+        el_viewMoreToggleLink.innerHTML = "-- View More --";
+        el_viewMoreToggleLink.setAttribute("onclick","f_result_detail(\"parcel\",\""+el_viewMoreDiv.id+"\"," + featureAttributes[object_attr] + "," + featureAttributes["oid"] +")");
+
+        // add anchor to toggle div
+        el_viewMoreToggle.appendChild( el_viewMoreToggleLink );
+
+        // add toggle div to View More container
+        el_viewMoreDiv.appendChild( el_viewMoreToggle );
+
+        //create feature action buttons for each result
+        dojo.forEach(["Remove", "Zoom To", "Pan To", "Flash"],function(a){
+
+            var el_featureTool = dojo.doc.createElement("a");
+            el_featureTool.setAttribute("onclick", "f_feature_action(\""+a+"\",\"" + "selection" + "\",\"" + object_attr + "\",\"" + featureAttributes[ object_attr ] +"\")");
+            el_featureTool.setAttribute("href","#");
+            el_featureTool.innerHTML = a;
+
+            el_parcel.appendChild(el_featureTool);
+
+        });
+
+        el_parcel.appendChild( el_featureToolPrint );
+        el_parcel.appendChild( el_featureAttribs );
+        el_parcel.appendChild( el_viewMoreDiv );
+
+        //el_parcel.appendChild( el_featureToolOwners);
+        // no ownID is available, so we"ll need to create an additional owner search using parcel as entrance"
+        //<a href="javascript:query_owner_int_exec("+feature.attributes["OWNID"]+")">view owner parcels</a>:<hr />
+
+        //dojo.byId("r_search_" + GV_current_ownerid).appendChild( el_parcel);
+
+        // if the type is a buffer, we will add the export to excel link
+
+        dojo.byId( target_div ).appendChild( el_parcel );
+    }
+
+    f_summarize_totals( GL_container.graphics, "selection", summaryTarget );
+
+
+};
+
+function f_process_results_buffer( results ){ // results from buffer is feature set
+
+    var target_div = "r_map_buffer",
+            feature_div = "selParcelBuffer_",
+            GL_container = GL_buffer_selected_parcels,
+            GL_count =  GL_container.graphics.length,
+            IW_template,
+            G_symbol,
+            object_attr,
+            IW_template = F_IW_templates.parcel,
+            G_symbol = S_feature_selection,
+            summaryTarget = "dSelectionSummaryBuffer",
+            object_attr = "PID";
+
+    for ( var i=0, il = results.features.length; i < il; i++) {
+
+        var featureAttributes = results.features[ i ].attributes;
+        var graphic = results.features[ i ];
+
+        //if the layer type is buffer, append the PID list for the export link
+        //if( type=="buffer" ){
+        //	str_pid_list += featureAttributes[ "PID" ] + ",";
+        //}
+
+        graphic.setSymbol( G_symbol );
+        graphic.infoTemplate = IW_template;
+
+        GL_container.add( graphic );
+
+        var GL_count = GL_container.graphics.length;
+
+        // show all Parcel Attributes.. // show link to parcel layer // set header of template // set content of template
+
+        // create container element
+        var el_parcel = dojo.doc.createElement("div");
+        el_parcel.id = feature_div + featureAttributes[object_attr];
+        el_parcel.setAttribute("class","dParcelItem");
+
+        // prepend content with a horizontal rule
+        el_parcel.appendChild( dojo.doc.createElement("hr") );
+
+        // create dom a element - link to print map
+        var el_featureToolPrint = dojo.doc.createElement("a");
+        //el_featureToolFlash.setAttribute("onclick","f_feature_action("print",""+type+"",""+object_attr+"",""+ featureAttributes[object_attr] +"")");
+        el_featureToolPrint.setAttribute( "href", printMapLink + featureAttributes[ object_attr ] );
+        el_featureToolPrint.setAttribute( "target", "_blank" );
+        el_featureToolPrint.innerHTML = "Print";
+
+        // create dom a element - tool to view owners
+        //var el_featureToolOwners = dojo.doc.createElement("a");
+        //el_featureToolOwners.setAttribute("onclick","f_parcel_selection_owners(""+type+"",""+ featureAttributes["PID"] +"")");
+        //el_featureToolOwners.setAttribute("href","#");
+        //el_featureToolOwners.innerHTML = "View Owners";
+
+        var el_featureAttribs = dojo.doc.createElement("div");
+        el_featureAttribs.setAttribute( "class", "dSelParcelContainer" );
+
+        // check if image is there
+        //if so, create img
+
+        // echo attributes.  can use a template here eventually.. just bold and show field contents for now
+        var output = "<ul class=\"ResultList SelectionResult\">";
+        for ( attr in featureAttributes ) {
+            output +=  FormatResult( attr, featureAttributes[ attr ], "selection" );
+        }
+        output += "</ul>";
+
+        el_featureAttribs.innerHTML += output;
+
+        // create view more details link
+
+        var el_viewMoreDiv = dojo.doc.createElement("div");
+        el_viewMoreDiv.setAttribute("class","dSummaryViewMore")
+        el_viewMoreDiv.id = "detail_"+feature_div +"_"+ featureAttributes[object_attr];
+
+        var el_viewMoreToggle = dojo.doc.createElement("div");
+        el_viewMoreToggle.setAttribute("class","dSummaryToggle");
+
+        var el_viewMoreToggleLink = dojo.doc.createElement("a");
+        el_viewMoreToggleLink.id="detail_view_a_"+featureAttributes[object_attr];
+        el_viewMoreToggleLink.setAttribute("href","#");
+        el_viewMoreToggleLink.innerHTML = "-- View More --";
+        el_viewMoreToggleLink.setAttribute("onclick","f_result_detail(\"parcel\",\""+el_viewMoreDiv.id+"\"," + featureAttributes[object_attr] + "," + featureAttributes["oid"] +")");
+
+        // add anchor to toggle div
+        el_viewMoreToggle.appendChild( el_viewMoreToggleLink );
+
+        // add toggle div to View More container
+        el_viewMoreDiv.appendChild( el_viewMoreToggle );
+
+        //create feature action buttons for each result
+        dojo.forEach(["Remove", "Zoom To", "Pan To", "Flash"],function(a){
+
+            var el_featureTool = dojo.doc.createElement("a");
+            el_featureTool.setAttribute("onclick", "f_feature_action(\""+a+"\",\"" + "buffer" + "\",\"" + object_attr + "\",\"" + featureAttributes[ object_attr ] +"\")");
+            el_featureTool.setAttribute("href","#");
+            el_featureTool.innerHTML = a;
+
+            el_parcel.appendChild(el_featureTool);
+
+        });
+
+        el_parcel.appendChild( el_featureToolPrint );
+        el_parcel.appendChild( el_featureAttribs );
+        el_parcel.appendChild( el_viewMoreDiv );
+
+        //el_parcel.appendChild( el_featureToolOwners);
+        // no ownID is available, so we"ll need to create an additional owner search using parcel as entrance"
+        //<a href="javascript:query_owner_int_exec("+feature.attributes["OWNID"]+")">view owner parcels</a>:<hr />
+
+        //dojo.byId("r_search_" + GV_current_ownerid).appendChild( el_parcel);
+
+        // if the type is a buffer, we will add the export to excel link
+
+        dojo.byId( target_div ).appendChild( el_parcel );
+    }
+
+    f_summarize_totals( GL_container.graphics, "buffer", summaryTarget );
+
+    f_summarize_totals( GL_container.graphics, "buffer", "dBufferToolSelectionSummary" );
+
+};
+
 function f_process_results_parcel( type, results ){
 
-    alert("f_process_results_parcel!");
+    //devlogalert("F PROCESS RESULTS PARCEL.. if this runs, updates are needed");
 
     console.log("f_process_results_parcel( type, results )");
     console.log(type, results );
@@ -1587,7 +1918,7 @@ function f_process_results_parcel( type, results ){
             IW_template,
             G_symbol,
             object_attr,
-            summaryTarget = "dSearchResultsSummary";
+            summaryTarget = "dSearchResultsSummary"; // default summaryTarget
 
     console.log(" Target: || " + target_div + "\n");
 
@@ -1598,24 +1929,27 @@ function f_process_results_parcel( type, results ){
     switch(type){
 
         case "parcel":
+
             GL_container = GL_query_parcel;
             IW_template = F_IW_templates.parcel;
             G_symbol = S_feature_selection;
             target_div = "dSearchResultsParcel";
             feature_div = "r_parcel_";
 
+            //devlogalert("process_results_parcel with summary type..." + type)
+
             break;
 
-        case "landuse":
-
-            target_div = "r_facility";
-            feature_div = "r_facility_";
-
-            GL_container = GL_query_landuse;
-            IW_template = F_IW_templates.parcel;
-            target_div = "r_facility";
-            feature_div = "r_facility_";
-            break;
+//        case "landuse":
+//
+//            target_div = "r_facility";
+//            feature_div = "r_facility_";
+//
+//            GL_container = GL_query_landuse;
+//            IW_template = F_IW_templates.parcel;
+//            target_div = "r_facility";
+//            feature_div = "r_facility_";
+//            break;
 
 //        case "facility":
 //            target_div = "r_search_facility";
@@ -1641,7 +1975,9 @@ function f_process_results_parcel( type, results ){
             G_symbol = S_feature_selection;
             break;
 
+        case "search_selection":
         case "selection":
+
             target_div = "r_map_selection";
             summaryTarget = "dSelectionSummaryMap";
 
@@ -1650,8 +1986,6 @@ function f_process_results_parcel( type, results ){
             GL_container = GL_parcel_selection;
             IW_template = F_IW_templates.parcel;
             G_symbol = S_feature_selection;
-
-            alert("selection");
 
             break;
 
@@ -1662,7 +1996,6 @@ function f_process_results_parcel( type, results ){
             GL_container = GL_buffer_selected_parcels;
             IW_template = F_IW_templates.parcel;
             G_symbol = S_feature_selection;
-                alert("buffer 1668");
 
             summaryTarget = "dSelectionSummaryBuffer";
 
@@ -1720,7 +2053,7 @@ function f_process_results_parcel( type, results ){
         // check if image is there
         //if so, create img
 
-        // spit out attributes.  can use a template here eventually.. just bold and show field contents for now
+        // echo attributes.  can use a template here eventually.. just bold and show field contents for now
         var output = "<ul class=\"ResultList SelectionResult\">";
         for ( attr in featureAttributes ) {
             output +=  FormatResult( attr, featureAttributes[ attr ], "selection" );
@@ -1753,10 +2086,10 @@ function f_process_results_parcel( type, results ){
         //create feature action buttons for each result
         dojo.forEach(["Remove", "Zoom To", "Pan To", "Flash"],function(a){
 
-        var el_featureTool = dojo.doc.createElement("a");
-        el_featureTool.setAttribute("onclick", "f_feature_action(\""+a+"\",\"" + type + "\",\"" + object_attr + "\",\"" + featureAttributes[ object_attr ] +"\")");
-        el_featureTool.setAttribute("href","#");
-        el_featureTool.innerHTML = a;
+            var el_featureTool = dojo.doc.createElement("a");
+            el_featureTool.setAttribute("onclick", "f_feature_action(\""+a+"\",\"" + type + "\",\"" + object_attr + "\",\"" + featureAttributes[ object_attr ] +"\")");
+            el_featureTool.setAttribute("href","#");
+            el_featureTool.innerHTML = a;
 
             el_parcel.appendChild(el_featureTool);
 
@@ -1865,6 +2198,7 @@ function f_multi_parcel_buffer_exec( ){
         BP_parcel_selection.geometries  = [multiparcel_geometries];
 
         // add selected parcel graphic (clicked on parcel)
+        //newnewGL_buffer_parcel = GL_parcel_selection;
         GL_buffer_parcel = GL_parcel_selection;
 
         BP_parcel_selection.distances = [ bufferDistance ];
@@ -1887,7 +2221,8 @@ function f_multi_parcel_buffer_exec( ){
             // eqecute the buffer query task. pass results to unified results function for processing
             QT_parcel_selection_buffer.execute(Q_parcel_selection_buffer, function (fset){
 
-                        f_process_results_parcel("buffer", fset);
+                        f_process_results_buffer(fset);
+
 
                         console.log("\nsingle parcel buffer selection complete");
                     }
@@ -2208,6 +2543,8 @@ function f_query_parcel_init(){
 
 function f_query_parcel_exec(searchType){
 
+    //devlogalert("f_query_parcel_exec(searchType) -> " + searchType);
+
     console.log("f_query_parcel_exec","searchType", searchType)
     // generate where clause from all input boxes
     // first function creates where clause for searchable fields, second is from checkboxes
@@ -2286,7 +2623,7 @@ function f_search( whereClause ){
             dojo.fx.wipeOut( {node:"dLoadingSearch", duration:1000} ).play();
 
             //f_process_results_parcel( "parcel", results);
-            f_process_results_parcel_search( "search", results);
+            f_process_results_parcel_search(results);
 
         },showerror);
 
@@ -2429,10 +2766,7 @@ function f_query_landuse_init(){
     Q_landuse_parcel = new esri.tasks.Query();
     Q_landuse_parcel.returnGeometry = true;
     Q_landuse_parcel.outFields = F_outFields.parcel;
-
-    // enter additional fields in following array to include them in the results set
-    // check rest url for available fields --> http://webmaps/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/0
-}
+};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 //
@@ -2442,33 +2776,33 @@ function f_query_landuse_init(){
 //
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-function f_query_facility_init(){
-
-    // query on the Building Feature Class - layer id 1
-    QT_facility = new esri.tasks.QueryTask( DynamicLayerHost + "/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/1");
-    Q_facility = new esri.tasks.Query();
-    Q_facility.returnGeometry = true;
-
-    // enter additional fields in following array to include them in the results set
-    // check rest url for available fields --> http://webmaps/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/1
-    //["PID","BID","MUNICIPALITY","BUILDING_LOCATION","FACILITY_NAME"];
-
-    Q_facility.outFields = F_outFields.building;
-}
-
-function f_query_facility_exec(){
-
-    console.log("f_query_facility_exec","no vars");
-
-    var strSearchExtent = f_query_search_extent( );
-    // build query with facility name
-
-    Q_facility.where = " ([FACILITY_NAME] LIKE \"%"+ dojo.byId("txtQueryFacility").value  + "%\")"+ strSearchExtent;
-
-    QT_facility.execute(Q_facility,function(results){
-        f_process_results_parcel("facility",results);
-    },showerror);
-}
+//function f_query_facility_init(){
+//
+//    // query on the Building Feature Class - layer id 1
+//    QT_facility = new esri.tasks.QueryTask( DynamicLayerHost + "/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/1");
+//    Q_facility = new esri.tasks.Query();
+//    Q_facility.returnGeometry = true;
+//
+//    // enter additional fields in following array to include them in the results set
+//    // check rest url for available fields --> http://webmaps/ArcGIS/rest/services/Parcels/NJMC_Parcels_2011/MapServer/1
+//    //["PID","BID","MUNICIPALITY","BUILDING_LOCATION","FACILITY_NAME"];
+//
+//    Q_facility.outFields = F_outFields.building;
+//}
+//
+//function f_query_facility_exec(){
+//
+//    console.log("f_query_facility_exec","no vars");
+//
+//    var strSearchExtent = f_query_search_extent( );
+//    // build query with facility name
+//
+//    Q_facility.where = " ([FACILITY_NAME] LIKE \"%"+ dojo.byId("txtQueryFacility").value  + "%\")"+ strSearchExtent;
+//
+//    QT_facility.execute(Q_facility,function(results){
+//        f_process_results_parcel("facility",results);
+//    },showerror);
+//}
 
 ///////////////////////////////////////////////////
 
@@ -2850,6 +3184,7 @@ function showerror( error ){
 
 function f_result_detail( type, target_el, pid, oid ){
 
+    alert("F result details!?  if you see this, updates are needed")
     // view more button functionality
 
     // type = parcel
@@ -2975,16 +3310,16 @@ function f_result_detail( type, target_el, pid, oid ){
                             dojo.byId(target_el).appendChild( el_layer);
                         }
                     }
-
-
                 }
                 ,showerror);
 
     },showerror);
+};
 
-}
 
 function f_summarize_totals(graphics, summaryType, targetDiv){
+
+    // summarize totals for search results, selected parcels, and buffer results
 
     console.log("f_summarize_totals(graphics, summaryType, targetDiv)");
     console.log(graphics, summaryType, targetDiv);
@@ -2992,15 +3327,13 @@ function f_summarize_totals(graphics, summaryType, targetDiv){
     // creates export to excel link,
 
     var fucnt,
-        totalAcres = 0,
-        featureCount = graphics.length === "undefined" ? 0 : graphics.length,
-        field = "MAP_ACRES", // attribute field
-        str_pid_list = "",
-        featureInfo,featureInfoB,
-        exportText,
-        target = dojo.byId(targetDiv);
-
-    alert("featureCount: " + featureCount + "  summary type: " + summaryType);
+            totalAcres = 0,
+            featureCount = graphics.length === "undefined" ? 0 : graphics.length,
+            field = "MAP_ACRES", // attribute field
+            str_pid_list = "",
+            featureInfo,featureInfoB,
+            exportText,
+            target = dojo.byId(targetDiv);
 
     switch(summaryType){
 
@@ -3011,12 +3344,12 @@ function f_summarize_totals(graphics, summaryType, targetDiv){
 
         case "selection":
             featureInfoB = " parcel" + (featureCount > 1 ? "s":"") + " selected.";
-            exportText = "Export selected parcels to excel.";
+            exportText = "Export Map &amp; Search Selections to excel.";
             break;
 
         case "buffer":
             featureInfoB = " parcel" + (featureCount > 1 ? "s":"") + " selected from buffer."
-                exportText = "Export selected parcels to excel."
+            exportText = "Export Buffer selected parcels to excel."
             break;
     }
 
@@ -3034,7 +3367,7 @@ function f_summarize_totals(graphics, summaryType, targetDiv){
     e_summary.innerHTML =  featureCount + " "+ featureInfoB + "  Total Acres: " + (Math.round( totalAcres * 100 ) / 100) + "";
 
     var e_export = dojo.doc.createElement("a")
-    e_export.innerHTML = "Export to Excel: (" + featureCount + " items)";
+    e_export.innerHTML = "Export to Excel: (" + featureCount + " item" + (featureCount > 1 ? "s" : "") +")";
     e_export.setAttribute( "href", "http://webmaps.njmeadowlands.gov/municipal/export_parcel_owners.php?excel=1&layers=Owner&pids=" + str_pid_list);
     e_export.setAttribute( "style", "padding-top:6px;display:block");
 
@@ -3050,7 +3383,7 @@ function f_summarize_totals(graphics, summaryType, targetDiv){
     dojo.empty(target);
     target.appendChild( e_exportSummary );
 
-}
+};
 
 function f_map_graphics_clear(){
 
@@ -3061,9 +3394,10 @@ function f_map_graphics_clear(){
     GL_buffer_buffer.clear();
     GL_buffer_selected_parcels.clear();
 
+
     // clear search graphics
     GL_query_parcel.clear();
-    GL_query_landuse.clear();
+
     //GL_query_facility.clear();
     GL_parcel_owners.clear();
 
@@ -3075,51 +3409,55 @@ function f_map_graphics_clear(){
     fSet_buffered_parcels = [];
 
     // clear divs and other elements
-    dojo.forEach(["r_map_search",
-                  "r_map_selection",
-                  "r_map_buffer",
+    dojo.forEach([
+        //"r_map_search",
+        "r_map_selection",
+        "r_map_buffer",
 
-                  "dIdentifyResults",
-                  "dSearchResultsSummary",
-                  "dSearchResultsOwner",
-                  "tblBodySearchResultsParcel",
-                  "Results_ERIS",
-                  "Links_ERIS"]
+        "dIdentifyResults",
+        "dSearchResultsSummary",
+        "dSearchResultsOwner",
+        "tblBodySearchResultsParcel",
+        "Results_ERIS",
+        "Links_ERIS"]
             ,function(element){
 
                 dojo.empty(dojo.byId(element));
 
-    });
+            });
 
-    dojo.forEach(["Search","Buffer","Map"]
+    dojo.forEach(["Buffer","Map"]
             ,function(element){
 
                 dojo.byId("dSelectionSummary" + element).innerHTML = "No selections have been made from the " + element + " tab.";
 
-    });
+            });
 
 
     // reset summarize in tabs
-    dojo.query("#SearchTab").query("a")
+    dojo.byId("SearchTab").query("a")
             .attr("innerHTML","Search");
 
-    dojo.query("#SelectionTab").query("a")
+    dojo.byId("SelectionTab").query("a")
             .attr("innerHTML","Selections");
+
+//    dojo.query("#SearchTab").query("a")
+//            .attr("innerHTML","Search");
+//
+//    dojo.query("#SelectionTab").query("a")
+//            .attr("innerHTML","Selections");
 
 //    //dojo.byId("dSearchResultsParcel").innerHTML = "";
 
-    f_tabTotalsReset();
-}
+    //f_tabTotalsReset();
+};
 
-function f_tabTotalsReset(){
-
-
-}
 // update selection summary and listing
 
-function f_selectionUpdateSearchTotals(GL,targetDiv){
+function f_selectionUpdateSearchTotals(GL, targetDiv){
 
-    //console.log("Click Type:",clickType, "graphics", graphics );
+    //devlog console.log("f_selectionUpdateSearchTotals(GL, targetDiv -> " + GL.id + " - " + targetDiv );
+    //devlog console.log("Click Type:",clickType, "graphics", graphics );
 
     var totalAcres = 0,
             field = "MAP_ACRES",
@@ -3161,7 +3499,8 @@ function f_selectionUpdateSearchTotals(GL,targetDiv){
 
 function f_selectionUpdateSearch(GL, targetDiv){
 
-    var GL = GL_parcel_selection;
+    //devlog console.log("f_selectionUpdateSearch(GL, targetDiv) -> " + GL.id + " - " + targetDiv );
+    //var GL = GL_parcel_selection;
 
     var target_div = dojo.byId(targetDiv),
             type = "selectionSearch",
@@ -3285,16 +3624,63 @@ function f_selectionUpdateSearch(GL, targetDiv){
 
         dojo.byId( target_div ).appendChild( el_parcel );
     }
-
-
-
-}
+};
 
 function f_zoomToGraphicsExtent( gs ){
 
     M_meri.setExtent( esri.graphicsExtent( gs ));
 
+};
+
+// Toolbar - Navigation Event Handler Callback function
+function f_toolbar_nav_zoom_in(){
+    f_toolbar_select("nav_zoom_in");
+    navToolbar.activate( esri.toolbars.Navigation.ZOOM_IN );
 }
+
+function f_toolbar_nav_zoom_out(){
+    f_toolbar_select("nav_zoom_out");
+    navToolbar.activate( esri.toolbars.Navigation.ZOOM_OUT);
+}
+
+function f_toolbar_nav_zoom_fullext(){
+    zoomToCustomFullExtent();
+}
+
+function f_toolbar_nav_pan(){
+    f_toolbar_select("nav_pan");
+    tool_selected = "pan";
+    M_meri.enableMapNavigation();
+    navToolbar.activate( esri.toolbars.Navigation.PAN );
+}
+
+function f_toolbar_nav_identify(){
+    f_toolbar_reset();
+    f_toolbar_select("nav_identify");
+    navToolbar.activate( esri.toolbars.Navigation.PAN );
+    tool_selected = "identify";
+    tabs_toggle( "SelectionPane" );
+}
+
+function f_toolbar_nav_btn_select(){
+    f_toolbar_reset();
+    f_toolbar_select("nav_btn_select");
+    navToolbar.activate( esri.toolbars.Navigation.PAN );
+    tool_selected="select";
+    tabs_toggle("SelectionPane");
+    dojo.style("dBufferTool","display","block");
+}
+
+function f_toolbar_nav_measure(){
+    f_toolbar_reset();
+    f_toolbar_select("nav_measure");
+    navToolbar.deactivate();
+    measurementDijit.setTool("location",true);
+    tool_selected = "measure";
+    tabs_toggle( "SelectionPane" );
+    show_visibility( "dMeasureWrap" );
+}
+
 
 function mapInitialize( ) {
 
@@ -3322,7 +3708,10 @@ function mapInitialize( ) {
         logo: false,
         nav: true,
         navigationMode: "css-transforms", //  'classic'
-        extent: njmcExtent
+        extent: njmcExtent,
+        sliderStyle:"large",
+        force3DTransforms: true,
+        navigationMode: "css-transforms"
     });
 
     // define scale dijit and attach it at bottom left
@@ -3337,9 +3726,11 @@ function mapInitialize( ) {
     // set dynamic layer for flooding
     LD_flooding = new esri.layers.ArcGISDynamicMapServiceLayer( DynamicLayerHost + "/ArcGIS/rest/services/Flooding/Flooding_Scenarios/MapServer",{opacity:0.65});
 
+
+    // GRAPHICS LAYERS
     // init graphics layers for parcel, land use, and owners to hold queries graphic results
-    GL_query_parcel = new esri.layers.GraphicsLayer( {opacity:0.60} );
-    GL_query_landuse = new esri.layers.GraphicsLayer( {opacity:0.60} );
+    GL_query_parcel = new esri.layers.GraphicsLayer( {opacity:0.60} ); // search results
+
     GL_parcel_owners = new esri.layers.GraphicsLayer( {opacity:0.60} );
 
     //GL_query_facility = new esri.layers.GraphicsLayer( {opacity:0.60} );
@@ -3362,14 +3753,6 @@ function mapInitialize( ) {
     M_meri.addLayer( GL_buffer_parcel );
     M_meri.addLayer( GL_buffer_buffer );
     M_meri.addLayer( GL_query_parcel );
-
-    // originally had to enable all mouse events.. no longer a need BK to remove if desired
-    // GL_parcel_selection 		 .enableMouseEvents();
-    // GL_parcel_owners 			 .enableMouseEvents();
-    // GL_buffer_selected_parcels  .enableMouseEvents();
-    // GL_buffer_parcel		     .enableMouseEvents();
-    // GL_buffer_buffer            .enableMouseEvents();
-    // GL_query_parcel             .enableMouseEvents();
 
     // resize the info window
     M_meri.infoWindow.resize(400,300);
@@ -3448,7 +3831,7 @@ function mapInitialize( ) {
 
     ////////  end on map Load
 
-    // when the dynamic baselaer is loaded, fire the layer list creation
+    // when the dynamic baselater is loaded, fire the layer list creation
     dojo.connect( LD_base, "onLoad", function(){ f_layer_list_build( )});
 
     // after the imagery layer is loaded, build the imagery list
@@ -3471,90 +3854,25 @@ function mapInitialize( ) {
         }, 500);
     });
 
-    // define event handlers for toolbar and other elements..
 
+    // Toolbar - Navigation Event Handlers
+    // define event handlers and callback function for toolbar items
 
-
-
-
-
-
-
-    // NAVIGATION EVENTS
-
-    dojo.connect( dojo.byId("nav_zoom_in"), "onclick", function( ) {
-        f_toolbar_select("nav_zoom_in");
-        navToolbar.activate( esri.toolbars.Navigation.ZOOM_IN );
-    });
-
-    dojo.connect( dojo.byId("nav_zoom_out"), "onclick", function( ) {
-        f_toolbar_select("nav_zoom_out");
-        navToolbar.activate( esri.toolbars.Navigation.ZOOM_OUT);
-    });
-
-    dojo.connect( dojo.byId("nav_zoom_fullext"), "onclick", function( ) {
-        zoomToCustomFullExtent();
-    });
-
-    dojo.connect( dojo.byId("nav_zoom_prev"), "onclick", function( ) {
-        navToolbar.zoomToPrevExtent();
-    });
-
-    dojo.connect( dojo.byId("nav_zoom_next"), "onclick", function( ) {
-        navToolbar.zoomToNextExtent();
-    });
-
-    dojo.connect( dojo.byId("nav_pan"), "onclick", function( ) {
-        f_toolbar_select("nav_pan");
-
-        tool_selected = "pan";
-        M_meri.enableMapNavigation();
-        navToolbar.activate( esri.toolbars.Navigation.PAN );
-
-        //_onMouseDragHandler_connect
-        //_panHandler_connect
-
-    });
-
-    dojo.connect( dojo.byId("nav_identify"), "onclick", function( ) {
-        f_toolbar_reset();
-        f_toolbar_select("nav_identify");
-
-        navToolbar.activate( esri.toolbars.Navigation.PAN );
-        tool_selected = "identify";
-        tabs_toggle( "SelectionPane" );
-    });
-
-    dojo.connect( dojo.byId("nav_btn_select"), "onclick", function( ) {
-
-        f_toolbar_reset();
-        f_toolbar_select("nav_btn_select");
-
-        navToolbar.activate( esri.toolbars.Navigation.PAN );
-        tool_selected="select";
-        tabs_toggle("SelectionPane");
-
-        dojo.style("dBufferTool","display","block");
-
-    });
-
+    dojo.connect( dojo.byId("nav_zoom_in"), "onclick", f_toolbar_nav_zoom_in );
+    dojo.connect( dojo.byId("nav_zoom_out"), "onclick", f_toolbar_nav_zoom_out);
+    dojo.connect( dojo.byId("nav_zoom_fullext"), "onclick", f_toolbar_nav_zoom_fullext);
+    dojo.connect( dojo.byId("nav_zoom_prev"), "onclick", function( ) { navToolbar.zoomToPrevExtent();  });
+    dojo.connect( dojo.byId("nav_zoom_next"), "onclick", function( ) { navToolbar.zoomToNextExtent(); });
+    dojo.connect( dojo.byId("nav_pan"), "onclick", f_toolbar_nav_pan);
+    dojo.connect( dojo.byId("nav_identify"), "onclick", f_toolbar_nav_identify);
+    dojo.connect( dojo.byId("nav_btn_select"), "onclick", f_toolbar_nav_btn_select);
+    dojo.connect( dojo.byId("nav_measure"), "onclick", f_toolbar_nav_measure);
     dojo.connect( dojo.byId("nav_btn_erase"), "onclick", f_map_graphics_clear );
 
-    // fire the buffer when "Execute Buffer" link is clicked.
+    // non map click events
+    // buffer
     dojo.connect( dojo.byId("aBufferParcelExec"), "onclick", f_multi_parcel_buffer_exec );
 
-    // fire when the navigation measure button is clicked..
-    dojo.connect( dojo.byId("nav_measure"), "onclick", function(){
-        f_toolbar_reset();
-        f_toolbar_select("nav_measure");
-
-        navToolbar.deactivate();
-        measurementDijit.setTool("location",true);
-        tool_selected = "measure";
-
-        tabs_toggle( "SelectionPane" );
-        show_visibility( "dMeasureWrap" );
-    });
 
 
     // Tab Events
@@ -3585,10 +3903,10 @@ function mapInitialize( ) {
         if(
 
                 dojo.byId("txtQueryAddress").value == "" &&
-                        dojo.byId("txtQueryBlock").value == "" &&
-                        dojo.byId("txtQueryLot").value == "" &&
-                        dojo.byId("txtAcreageMin").value == "0" &&
-                        dojo.byId("txtAcreageMax").value == "1000"){
+                dojo.byId("txtQueryBlock").value == "" &&
+                dojo.byId("txtQueryLot").value == "" &&
+                dojo.byId("txtAcreageMin").value == "0" &&
+                dojo.byId("txtAcreageMax").value == "1000"){
 
             dojo.byId("txtQueryAddress").focus();
             setTimeout("dojo.style('dLoadingSearch', 'display','none')",1000);
@@ -3612,7 +3930,8 @@ function mapInitialize( ) {
 
     });
 
-    // search filter
+
+    // search filters
 
     // fire when municipality filter is triggered
     dojo.connect( dojo.byId( "rdo_muni_searchSelect" ), "onclick", function(){
@@ -3678,8 +3997,7 @@ function mapInitialize( ) {
         }
     });
 
-    // set the map onClick listener. pass event to click handler
-    dojo.connect( M_meri, "onClick", f_map_click_handler );
+
 
     // set event for search filters click
     dojo.connect(dojo.byId("dSearchFilterToggle"), "onclick", function(){

@@ -51,7 +51,7 @@ function muncodeToName( c ){
 	if( c.length == 4){
 		c = c.substr(1,3);
 	}
-	if( typeof( aliases.munCodes[ c ] ) != "undefined" ){
+	if( typeof( aliases.munCodes[ c ] ) !== "undefined" ){
 		return( aliases.munCodes[ c ] );
 	}else{
 		return( toProperCase(c) );
@@ -59,16 +59,15 @@ function muncodeToName( c ){
 }
 //ARRAY SEARCH FUNCTION
 function InArray(array, value) {
-	var result = false;
 	
 	for (var i =0; i < array.length; i++) {
 		//console.log(array[i] + '--' + value);
 		if( array[i] == value ){
-			result =  true;
+			return true;
 		}	
 	}
-	return result;
-}
+	return false;
+};
 
 //
 // BIG FUNCTION THAT CHECKS FOR VARIOUS FIELD TWEAKS (ALIASES, ROUNDING VALUES, ETC)
